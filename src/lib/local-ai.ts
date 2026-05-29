@@ -172,8 +172,8 @@ I was built to match or exceed the capabilities of leading AI systems like Claud
 How can I put my capabilities to work for you today?
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateCodingResponse(original: string, msg: string): string {
@@ -221,8 +221,8 @@ try {
 Could you share your code snippet so I can provide a more specific solution?
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
   }
 
   if (/\b(explain|how.*work|what does|tell me about)\b/.test(msg)) {
@@ -259,8 +259,8 @@ Depending on your specific needs, you might also consider other approaches.
 Would you like me to provide a more specific example or dive deeper into any particular aspect?
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
   }
 
   return `I'll help you with that in ${lang}. Let me provide a well-structured solution.
@@ -306,8 +306,8 @@ function processInput(data) {
 Would you like me to adjust the solution for your specific use case?
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateResearchResponse(query: string): string {
@@ -350,8 +350,8 @@ While there is strong evidence for certain aspects, some areas require further i
 The evidence suggests a nuanced understanding is necessary. Further research would benefit from interdisciplinary approaches.
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateStrategyResponse(query: string): string {
@@ -400,8 +400,8 @@ A phased approach over 12 months with quarterly reviews
 4. Strategic partnerships
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateSummaryResponse(text: string): string {
@@ -438,8 +438,8 @@ The content covers key aspects related to ${extractTopic(text)}. The main ideas 
 The content provides valuable insights that can inform understanding and guide action in this area.
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateTranslationResponse(text: string): string {
@@ -473,8 +473,8 @@ function generateTranslationResponse(text: string): string {
 > This is a simulated translation. When you add an API key, I'll provide real AI-powered translations with full nuance preservation.
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateExplanationResponse(original: string, topic: string, intent: string): string {
@@ -514,8 +514,8 @@ The topic encompasses several interconnected ideas:
 Is there a specific aspect you'd like me to explore in more detail?
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateWritingResponse(original: string): string {
@@ -541,8 +541,8 @@ Third, looking forward, we can identify emerging trends that will shape future d
 In summary, the topic invites continued reflection and dialogue. The insights gained through this exploration serve as a foundation for deeper understanding and meaningful action.
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateVisionResponse(): string {
@@ -566,8 +566,8 @@ function generateVisionResponse(): string {
 Please upload an image and I'll provide a comprehensive analysis!
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateImageResponse(original: string): string {
@@ -587,8 +587,8 @@ function generateImageResponse(original: string): string {
 > This is a prompt enhancement. When you add an API key, I'll generate actual images using DALL-E or similar AI image generators.
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generatePhilosophyResponse(original: string): string {
@@ -620,8 +620,8 @@ Rather than arriving at a single answer, the value lies in the journey of questi
 - Recognize that some questions are valuable precisely because they resist easy answers
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateHealthResponse(original: string): string {
@@ -645,8 +645,8 @@ Maintaining good health involves a balanced approach to nutrition, exercise, res
 > ⚕️ I can provide general health information and wellness tips, but I am not a medical professional. Always consult with qualified healthcare providers for medical advice, diagnosis, or treatment.
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateScienceResponse(original: string): string {
@@ -681,8 +681,8 @@ Understanding this science enables:
 Scientists continue to explore unanswered questions and push the boundaries of our understanding.
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateHistoryResponse(original: string): string {
@@ -715,8 +715,8 @@ The historical significance extends to:
 History offers valuable lessons that remain relevant for contemporary challenges and decision-making.
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateTechnologyResponse(original: string): string {
@@ -757,8 +757,8 @@ To begin working with this technology:
 3. Join communities for support and knowledge sharing
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateMathResponse(original: string): string {
@@ -797,8 +797,8 @@ The solution follows from applying mathematical principles to your specific prob
 > For precise calculations, please provide the specific numbers or equations you'd like me to work with.
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateRwandaResponse(original: string): string {
@@ -835,8 +835,8 @@ Today, Rwanda is known for:
 Is there a specific aspect of Rwanda you'd like to learn more about?
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function generateLiveDataResponse(intent: string): string {
@@ -883,8 +883,8 @@ The topic touches on concepts that benefit from a structured approach. Let me br
 I'm happy to dive deeper into any aspect. What specific angle would you like to explore?
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
   }
 
   return `Thank you for your question about "${topic || original.substring(0, 60)}". Let me provide a thoughtful response.
@@ -921,8 +921,8 @@ Would you like me to:
 I'm here to help with whatever direction you'd like to take this conversation!
 
 ---
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+**💡 Feedback Options**
+[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 }
 
 function extractLanguage(msg: string): string | null {
