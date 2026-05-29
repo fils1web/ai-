@@ -250,10 +250,9 @@ function jokeResponse(): string {
 function codingResponse(original: string, msg: string, topic: string): string {
   const lang = detectLanguage(msg);
   const task = extractCodingTask(msg);
-
   const knowledge = getKnowledge(msg);
 
-  let response = `I'll help you with ${task} ${lang ? `using **${lang}**` : ""}. Let me provide a well-structured solution.`;
+  let response = `I'll help you ${task} ${lang ? `in **${lang}**` : ""}. Let me work through this step by step.`;
 
   if (knowledge) response = `Great question! ${knowledge}\n\nLet me provide a practical example.`;
 
@@ -262,51 +261,80 @@ function codingResponse(original: string, msg: string, topic: string): string {
 
 [Show More →]
 
-Alright, let's debug this step by step.
+## Debugging Approach
 
-**First thing** — isolate where things go wrong. Is it a compile error, a runtime crash, or just wrong output? That tells us a lot.
+Let me reason through this systematically.
 
-**Common culprits I'd check:**
-- Syntax issues — missing brackets, typos, incorrect imports
-- Runtime errors — null references, undefined variables, type mismatches
-- Logic bugs — the code runs but doesn't do what you expect
+### Step 1: Identify the Symptom
+What exactly is going wrong? Is it a:
+- **Compile/parse error** — code won't run at all
+- **Runtime error** — crashes during execution
+- **Logic error** — runs but produces wrong output
+- **Performance issue** — too slow or resource-heavy
 
-**Quick way to investigate:**
-\`\`\`${lang?.toLowerCase() || "javascript"}
-console.log("State at this point:", yourVariable);
+### Step 2: Isolate the Cause
+Common categories to check:
 
-try {
-  // Suspicious code
-} catch (err) {
-  console.error("Got an error:", err.message);
-}
+**Syntax & Imports**
+\`\`\`
+// Check for: missing brackets, typos, incorrect imports, undefined variables
 \`\`\`
 
-**Things to double-check:**
-1. Are all your variables defined before use?
-2. Are async calls being awaited properly?
-3. Are the data types what you expect them to be?
-4. Any off-by-one errors in loops?
+**Data Flow**
+\`\`\`
+// Verify: types match, async calls are awaited, null checks in place
+console.log("State:", variable);  // Quick sanity check
+\`\`\`
 
-If you share the specific code snippet, I can take a closer look and give you a targeted fix.${FEEDBACK}`;
+**Logic & Edge Cases**
+- Off-by-one errors in loops
+- Empty/null inputs not handled
+- Race conditions in async code
+
+### Step 3: Systematic Fix
+
+\`\`\`${lang?.toLowerCase() || "javascript"}
+// 1. Add input validation
+if (!input) throw new Error("Input required");
+
+// 2. Add logging at key points
+console.debug("Step 1 complete:", partial);
+
+// 3. Handle edge cases explicitly
+const safe = data ?? defaultValue;
+\`\`\`
+
+### Step 4: Verify
+Test with normal cases, edge cases, and error conditions.
+
+If you share the specific code, I can give a more targeted diagnosis.${FEEDBACK}`;
   }
 
   return `${response}
 
 [Show More →]
 
-Here's a practical implementation to get you started:
+## Solution
+
+Let me break this down step by step.
+
+### Approach
+${task === "explain" ? `I'll explain how this works, covering the core concepts, typical implementation patterns, and best practices.` : `I'll provide a well-structured implementation with proper error handling and documentation.`}
+
+### Implementation
 
 \`\`\`${lang?.toLowerCase() || "javascript"}
 /**
- * Solution for: ${original.substring(0, 60)}
+ * ${task === "explain" ? "Example showing how this concept works" : "Solution for: " + original.substring(0, 60)}
  */
 
-function ${topic.split(/[,\s]+/)[0] || "solve"}(input) {
+function ${topic.split(/[,\s]+/)[0] || "solution"}(input) {
+  // Validate input first
   if (!input) {
     throw new Error("Input is required");
   }
 
+  // Process the input
   const result = {
     input,
     processed: true,
@@ -318,8 +346,7 @@ function ${topic.split(/[,\s]+/)[0] || "solve"}(input) {
 }
 
 function processInput(data) {
-  // This is where the main logic goes
-  // Customize based on what you need
+  // Main logic here
   return Array.isArray(data)
     ? data.map(item => transform(item))
     : transform(data);
@@ -334,150 +361,141 @@ function transform(item) {
 }
 \`\`\`
 
-**A few notes:**
-- Input validation is always a good idea
-- The code is structured so you can easily modify the core logic
-- Error handling is built in from the start
+### Complexity Analysis
+- **Time**: O(n) for the main operation
+- **Space**: O(n) for the result storage
 
-Want me to adjust this for your specific use case? Just let me know what you're building.${FEEDBACK}`;
+### Edge Cases Handled
+- Empty/null inputs → validation error
+- Array vs single value → handled by \`processInput\`
+- Type variations → handled by \`transform\`
+
+### Next Steps
+1. Add unit tests for each function
+2. Add more specific error handling for your use case
+3. Consider performance optimization if working with large datasets
+
+Want me to adapt this for your specific requirements?${FEEDBACK}`;
 }
 
 function researchResponse(original: string, topic: string): string {
-  return `I've analyzed your research topic: "${topic || original.substring(0, 80)}". Here are my findings.
+  return `I've analyzed "${topic || original.substring(0, 80)}". Here are my structured findings.
 
 [Show More →]
 
 ## Research Analysis
 
 ### Executive Summary
-This analysis explores multiple dimensions of the topic, drawing from available knowledge and structured reasoning.
+${capitalize(topic || "this topic")} is a multi-dimensional subject that spans several key areas. This analysis breaks it down into core concepts, practical applications, and critical considerations.
 
 ### Key Findings
 
-#### 1. Overview and Context
-- The topic encompasses several important concepts and ideas
-- Multiple perspectives exist, each offering valuable insights
-- Understanding requires examining both theoretical and practical aspects
+#### 1. Core Concepts & Definition
+- **What it is**: The fundamental principles that define this topic
+- **Why it matters**: Its significance and relevance in context
+- **How it fits**: Its relationship to broader domains and systems
 
-#### 2. Detailed Analysis
+#### 2. Practical Applications
+- **Current use cases**: How this is applied in real-world scenarios
+- **Best practices**: Established approaches and methodologies
+- **Industry impact**: The effect on relevant sectors and communities
 
-**Perspective A — Core Concepts:**
-- Fundamental principles that define this topic
-- Key theories and frameworks for understanding
-- Important terminology and definitions
+#### 3. Critical Analysis
+- **Strengths**: Where this approach excels and delivers value
+- **Limitations**: Known constraints, gaps, or challenges
+- **Open questions**: Areas where understanding is still evolving
 
-**Perspective B — Practical Applications:**
-- Real-world implementations and use cases
-- Industry standards and best practices
-- Case studies and examples
+### Evidence & Reasoning
+- The established knowledge base provides a solid foundation
+- Practical examples demonstrate real-world validity
+- Logical analysis supports the main conclusions
 
-**Perspective C — Critical Evaluation:**
-- Strengths and advantages of current understanding
-- Limitations and areas requiring further investigation
-- Ongoing debates and unresolved questions
+### Recommendations
+1. Start with foundational resources to build core understanding
+2. Explore specific sub-topics aligned with your interests
+3. Apply concepts in practical contexts for deeper learning
 
-#### 3. Evidence and Support
-- Established knowledge provides a strong foundation
-- Practical examples demonstrate key principles
-- Logical reasoning supports main conclusions
-
-### Conclusions
-The evidence suggests a comprehensive understanding requires integrating multiple perspectives. Further exploration of specific aspects would provide additional depth.
-
-### Recommended Next Steps
-1. Explore specific sub-topics in more detail
-2. Consider practical applications in your context
-3. Engage with primary sources for deeper understanding
-
-Is there a specific aspect you'd like me to examine in more detail?${FEEDBACK}`;
+Is there a specific aspect of "${topic || "this topic"}" you'd like me to explore further?${FEEDBACK}`;
 }
 
 function strategyResponse(original: string, topic: string): string {
-  return `I've developed a strategic framework for: "${topic || original.substring(0, 80)}"
+  return `Here's a strategic framework for: "${topic || original.substring(0, 80)}"
 
 [Show More →]
 
 ## Strategic Framework
 
-### Vision & Objectives
-- **Primary Goal**: Define the core objective clearly
-- **Key Results**: Measurable outcomes that indicate success
-- **Timeline**: Realistic milestones and deadlines
+### 1. Vision & Objectives
+| Element | Description |
+|---------|-------------|
+| **Primary Goal** | Define what success looks like clearly |
+| **Key Results** | 2-3 measurable outcomes that indicate progress |
+| **Timeline** | Realistic milestones with target dates |
 
-### Analysis
+### 2. Situation Analysis
 
-#### SWOT Assessment
-| Dimension | Factors |
-|-----------|---------|
-| **Strengths** | Core competencies, unique advantages, resources |
-| **Weaknesses** | Gaps, limitations, areas for improvement |
-| **Opportunities** | Market trends, unmet needs, growth areas |
-| **Threats** | Competition, risks, external challenges |
+**SWOT Assessment**
+| Strength | Weakness | Opportunity | Threat |
+|----------|----------|-------------|--------|
+| Core competencies | Gaps to address | Market potential | Competition |
+| Unique advantages | Resource limits | Growth areas | External risks |
 
-### Strategic Pillars
+### 3. Strategic Pillars
 
-**Pillar 1: Foundation**
-- Establish core infrastructure and resources
-- Build foundational knowledge and capabilities
-- Set up measurement systems
+**Pillar 1: Foundation** — Build the essential infrastructure, capabilities, and resources needed for success.
 
-**Pillar 2: Growth**
-- Scale operations and reach
-- Develop competitive advantages
-- Expand into adjacent opportunities
+**Pillar 2: Growth** — Scale operations, expand reach, and develop competitive advantages.
 
-**Pillar 3: Optimization**
-- Refine processes for efficiency
-- Enhance quality and user experience
-- Build sustainable systems
+**Pillar 3: Optimization** — Refine processes for efficiency, quality, and sustainability.
 
-### Implementation Roadmap
-| Phase | Timeline | Key Activities |
-|-------|----------|----------------|
-| Setup | 0-3 months | Planning, resource allocation, team building |
-| Launch | 3-6 months | Initial rollout, feedback collection, iteration |
-| Scale | 6-12 months | Expansion, optimization, consolidation |
+### 4. Implementation Roadmap
+| Phase | Timeline | Focus |
+|-------|----------|-------|
+| Setup | 0-3 months | Planning, resources, team |
+| Launch | 3-6 months | Initial rollout, iterate |
+| Scale | 6-12 months | Expand, optimize |
+| Sustain | 12+ months | Maintain, evolve |
 
-### Risk Management
-- Identify key risks and mitigation strategies
-- Build contingency plans for critical paths
-- Regular review and adjustment cycles
+### 5. Risk Management
+- **Key risks**: Identify top 3-5 risks with mitigation plans
+- **Contingencies**: Backup plans for critical dependencies
+- **Review cycles**: Monthly check-ins to adjust course
 
-Would you like me to dive deeper into any specific pillar or aspect?${FEEDBACK}`;
+Want to dive deeper into any of these pillars?${FEEDBACK}`;
 }
 
 function summaryResponse(original: string, topic: string): string {
-  return `Here is a structured summary of your content.
+  return `Here's a structured summary of the content about "${topic || "your topic"}".
 
 [Show More →]
 
 ## Executive Summary
-The content addresses key themes related to "${topic || "the provided topic"}" with several important points and insights.
+The content explores key themes and ideas with practical implications.
 
 ## Key Points
-1. **Main Theme**: The central idea focuses on important concepts with practical implications
-2. **Supporting Evidence**: Key facts, examples, and data points reinforce the main arguments
-3. **Critical Insights**: Notable observations that add depth to understanding
+1. **Main Theme**: The central focus and its significance
+2. **Supporting Evidence**: Facts and examples that reinforce the narrative
+3. **Critical Insights**: Notable observations and takeaways
 
-## Detailed Breakdown
+## Breakdown
 
-### Primary Concepts
-- Core ideas and their significance
-- Important context and background
-- Key arguments and rationale
+### Core Concepts
+- **What it covers**: The scope and boundaries of the topic
+- **Why it matters**: Relevance and practical importance
+- **Key arguments**: Main ideas and their rationale
 
 ### Notable Details
-- Specific facts, figures, and references
-- Important distinctions and clarifications
-- Key takeaways for practical application
+- Important facts, figures, and references
+- Key distinctions and clarifications
+- Actionable takeaways
 
-### Actionable Insights
-1. Apply key principles to relevant situations
-2. Consider implications for decision-making
-3. Use findings for further exploration
+### Implications
+- How this information can be applied
+- What it means for decision-making
+- Connections to broader context
 
 ## Conclusion
-The content provides valuable perspectives that can inform understanding and guide action. For a more detailed analysis, please share the specific text you'd like summarized.${FEEDBACK}`;
+The content provides valuable perspectives for understanding and action. For a more precise summary, please share the specific text you'd like summarized.${FEEDBACK}`;
 }
 
 function translationResponse(original: string): string {
@@ -495,17 +513,17 @@ function translationResponse(original: string): string {
 [Show More →]
 
 **Original:**
-"${sourceText.substring(0, 300)}"
+> ${sourceText.substring(0, 300)}
 
 **${targetLang} Translation:**
-"${sourceText.substring(0, 300)}"
+> ${sourceText.substring(0, 300)}
 
 **Notes:**
-- Meaning and tone have been preserved
-- Natural expression in the target language
-- Culturally appropriate phrasing used
+- Meaning and tone preserved
+- Natural expression in target language
+- Culturally appropriate phrasing
 
-> To enable full AI-powered translation with all 100+ languages and nuanced cultural adaptation, add your API key to \`.env.local\`.${FEEDBACK}`;
+> For full AI-powered translation with 100+ languages and nuanced cultural adaptation, add an API key to \`.env.local\`.${FEEDBACK}`;
 }
 
 function writingResponse(original: string, topic: string): string {
@@ -515,26 +533,21 @@ function writingResponse(original: string, topic: string): string {
 
 [Show More →]
 
-## ${capitalize(format)}
-
-In the evolving landscape of ${topic || "our modern world"}, we find compelling opportunities for exploration and understanding. This ${format} examines the key dimensions that shape our perspective.
+## ${capitalize(format)}: ${capitalize(topic || "Your Topic")}
 
 ### Introduction
-The subject invites us to consider multiple viewpoints and embrace the complexity that defines meaningful discourse. By examining both foundational principles and contemporary developments, we can develop a comprehensive understanding.
+This ${format} explores key themes and ideas, offering perspective and insight.
 
-### Main Body
+### Content
+In considering the topic at hand, several important dimensions emerge. Each offers a unique lens through which to understand and engage with the subject.
 
-**Foundational Context:**
-Understanding this topic requires first appreciating its historical and conceptual roots. The foundations established over time continue to influence current thinking and practice.
+**Key themes:**
+- Foundational concepts that provide structure
+- Practical implications and real-world relevance
+- Connections to broader contexts
 
-**Contemporary Landscape:**
-Today, we see dynamic developments that build upon established knowledge while pushing into new territory. Key trends and innovations are reshaping how we approach and understand this domain.
-
-**Future Directions:**
-Looking ahead, emerging patterns suggest exciting possibilities. By recognizing these trajectories, we can prepare for and shape the future of this field.
-
-### Conclusion
-This ${format} has explored key aspects of ${topic || "the subject"}, providing a foundation for continued reflection and discussion. The insights gained serve as a springboard for deeper exploration and meaningful action.
+### Closing Thoughts
+The ideas explored here invite continued reflection and discussion. There's always more to discover.
 
 ---
 
@@ -546,38 +559,42 @@ function explainResponse(original: string, msg: string, topic: string): string {
   const knowledge = getKnowledge(msg);
 
   if (knowledge) {
-    return `Great question! Let me explain ${target}.
+    return `Let me explain ${target}.
 
 [Show More →]
 
 ${knowledge}
 
-So at its core, that's the basic idea. But there's more to it depending on what you're trying to do with it. If you're learning, I'd suggest starting with the fundamentals and then looking at some practical examples. If you're building something, I can help with specific implementation details.
-
-What context are you exploring this for? That way I can tailor the explanation to be most useful for you.${FEEDBACK}`;
+**Key takeaway**: ${target} is best understood by focusing on its core principles and how they apply in practice. If you want to go deeper into a specific aspect, just ask.${FEEDBACK}`;
   }
 
-  return `Let me explain **${target}** in a straightforward way.
+  return `Let me explain **${target}** clearly.
 
 [Show More →]
 
-So **${target}** — what is it really?
+## What is ${target}?
 
-At its simplest, it's about understanding how something works or what something means. The concept itself has a few layers worth looking at:
+At its simplest, ${target} refers to a concept or subject that has a few key layers worth understanding.
 
-**The basic idea** — what ${target} actually refers to and why people talk about it.
+### The Core Idea
+Understanding ${target} starts with grasping its fundamental nature — what it is, what it does, and why it exists.
 
-**How it works** — the mechanics or principles behind it. What makes it tick?
+### How It Works
+${target} operates through a set of principles and mechanisms. Breaking these down:
 
-**Why it matters** — how this knowledge is useful in practice. Where does it apply?
+1. **Foundation**: The basic principles that everything else builds on
+2. **Mechanism**: How the pieces fit together and interact
+3. **Output**: What results from the process or system
 
-Here's a simple way to think about it:
+### Why It Matters
+${target} is relevant because it helps us understand or solve problems in practical ways. Its applications span multiple domains and contexts.
 
+### A Simple Framework
 \`\`\`
-${target} = core principles + how it works + why it's useful
+${target} = core principles + mechanism + practical value
 \`\`\`
 
-If you have a specific aspect you want to dig into — practical applications, historical context, technical details — just let me know and I'll focus there.${FEEDBACK}`;
+Want to explore a specific aspect of ${target} in more detail?${FEEDBACK}`;
 }
 
 function howToResponse(original: string, topic: string): string {
@@ -585,46 +602,34 @@ function howToResponse(original: string, topic: string): string {
 
 [Show More →]
 
-## Step-by-Step Guide
+## Guide: ${capitalize(topic || "How to")}
 
 ### Prerequisites
-Before starting, make sure you have:
-1. The necessary tools and resources
-2. Basic understanding of key concepts
-3. A clear goal in mind
+Before starting, ensure you have:
+1. **Tools & resources** — what you'll need to follow along
+2. **Basic knowledge** — familiarity with key concepts
+3. **Clear goal** — know what success looks like
 
-### Step 1: Preparation
-- Gather all required materials and information
-- Set up your environment or workspace
-- Review the overall process before beginning
+### Step-by-Step Process
 
-### Step 2: Getting Started
-- Begin with the foundational steps
-- Follow the established sequence
-- Verify each step before proceeding
+**Step 1: Prepare**
+Set up your environment, gather materials, and review the overall process. Good preparation prevents most common issues.
 
-### Step 3: Main Process
-- Execute the core steps carefully
-- Pay attention to important details
-- Troubleshoot common issues as they arise
+**Step 2: Execute**
+Follow the established sequence carefully. Verify each step before moving to the next.
 
-### Step 4: Review and Optimize
-- Check the results against your goals
-- Make adjustments as needed
-- Document lessons learned for future reference
+**Step 3: Review**
+Check your results against your goals. What worked well? What could be improved?
 
-### Step 5: Completion
-- Finalize and verify everything is working
-- Clean up and organize resources
-- Plan next steps or ongoing maintenance
+**Step 4: Iterate**
+Make adjustments based on what you learned. Repeat as needed to achieve the desired outcome.
 
-## Tips for Success
-- Take your time and don't rush critical steps
-- Test incrementally rather than all at once
-- Seek help when encountering unfamiliar territory
-- Document your process for future reference
+### Tips for Success
+- **Test incrementally** — verify each small step before proceeding
+- **Document as you go** — note what works for future reference
+- **Ask for help** — when stuck, seek guidance from experienced sources
 
-Would you like me to elaborate on any specific step?${FEEDBACK}`;
+Want me to elaborate on any specific step?${FEEDBACK}`;
 }
 
 function compareResponse(original: string, topic: string): string {
@@ -632,44 +637,37 @@ function compareResponse(original: string, topic: string): string {
   const a = items[0] || "Concept A";
   const b = items[1] || "Concept B";
 
-  return `Here's a detailed comparison between **${capitalize(a)}** and **${capitalize(b)}**.
+  return `Here's a structured comparison between **${capitalize(a)}** and **${capitalize(b)}**.
 
 [Show More →]
 
 ## Comparison Analysis
 
 ### Quick Overview
-Both concepts share some common ground but differ in important ways. Understanding these differences helps in choosing the right approach for your needs.
+Both have distinct characteristics. Understanding their differences helps you choose the right fit.
 
 ### Side-by-Side Comparison
 
 | Aspect | ${capitalize(a)} | ${capitalize(b)} |
 |--------|-----------------|-----------------|
 | **Definition** | Core principles and purpose | Core principles and purpose |
-| **Strengths** | Key advantages and benefits | Key advantages and benefits |
-| **Weaknesses** | Limitations and drawbacks | Limitations and drawbacks |
-| **Best For** | Ideal use cases and scenarios | Ideal use cases and scenarios |
-| **Complexity** | Learning curve and difficulty | Learning curve and difficulty |
+| **Strengths** | Key advantages | Key advantages |
+| **Weaknesses** | Limitations | Limitations |
+| **Best For** | Ideal use cases | Ideal use cases |
+| **Complexity** | Learning curve | Learning curve |
 
-### Detailed Analysis
+### Deeper Analysis
 
 #### ${capitalize(a)}
-- **Strengths**: Performs well in specific scenarios with clear advantages
-- **Weaknesses**: May have limitations in certain contexts
-- **Best Used When**: Specific conditions are met
+- Excels in scenarios where specific conditions are met
+- Strong when certain priorities take precedence
 
 #### ${capitalize(b)}
-- **Strengths**: Excels in different areas with unique benefits
-- **Weaknesses**: Trade-offs compared to alternatives
-- **Best Used When**: Different conditions apply
-
-### Which Should You Choose?
-The choice depends on your specific needs:
-- Choose **${capitalize(a)}** if: Your priorities align with its strengths
-- Choose **${capitalize(b)}** if: Your needs match its capabilities better
+- Performs best under different conditions
+- Offers advantages in complementary areas
 
 ### Recommendation
-Consider your specific requirements, constraints, and goals when making a decision. Both options have merit, and the best choice depends on your context.${FEEDBACK}`;
+Choose **${capitalize(a)}** if your priorities align with its strengths. Choose **${capitalize(b)}** if your needs match its capabilities better. Consider your specific requirements, constraints, and goals.${FEEDBACK}`;
 }
 
 function whyResponse(original: string, topic: string): string {
@@ -677,52 +675,38 @@ function whyResponse(original: string, topic: string): string {
 
 [Show More →]
 
-## Analysis
+## Why Analysis
 
-### The Core Reason
-Understanding why involves examining several interconnected factors that together provide a comprehensive explanation.
+Let me break this down into causal factors.
 
-### Key Factors
-
-**1. Historical Context**
-- How past developments led to current understanding
-- The evolution of ideas and practices
+### 1. Historical Context
+- Past developments and their influence on the present
+- How ideas and practices evolved over time
 - Lessons learned from experience
 
-**2. Practical Considerations**
-- Functional benefits and advantages
-- Efficiency and effectiveness
-- Real-world requirements and constraints
+### 2. Practical Drivers
+- Functional benefits and real-world advantages
+- Efficiency and effectiveness considerations
+- Constraints and requirements that shaped outcomes
 
-**3. Causal Relationships**
-- Direct causes and their effects
-- Indirect influences and contributing factors
-- Chain of reasoning connecting events
+### 3. Causal Chain
+**Cause → Effect → Outcome**
+- Primary factors and their direct effects
+- Secondary influences that amplified or moderated results
+- Feedback loops and reinforcing patterns
 
-### Benefits and Drawbacks
-
-**Advantages:**
-- Improved outcomes and results
-- Greater efficiency or effectiveness
-- Enhanced understanding or capability
-
-**Considerations:**
-- Trade-offs that may be necessary
-- Context-dependent applicability
-- Potential limitations
-
-### Conclusion
-The reasoning is multi-faceted, with various factors contributing to the overall explanation. Understanding these dimensions provides a more complete picture and enables better decision-making.${FEEDBACK}`;
+### Summary
+Several interconnected factors explain why this is the case. Understanding these layers provides a complete picture rather than a simple answer.${FEEDBACK}`;
 }
 
 function visionResponse(): string {
-  return `I'm ready to analyze any image you'd like me to examine.
+  return `I'm ready to analyze images for you.
 
 [Show More →]
 
 **To get started:**
-1. Use the **file upload** section above to attach your image
-2. Let me know if you want me to focus on specific aspects
+1. Upload an image using the file upload section above
+2. Tell me what aspects to focus on (optional)
 3. I'll provide a detailed visual analysis
 
 **What I can analyze:**
@@ -733,69 +717,61 @@ function visionResponse(): string {
 - Emotional tone and atmosphere
 - Technical or professional details
 
-**Analysis Format:**
-When you provide an image, I'll deliver a comprehensive breakdown covering visual elements, interpretation, insights, and any notable observations.
-
 Please upload an image to begin.${FEEDBACK}`;
 }
 
 function imageGenResponse(original: string, topic: string): string {
-  return `I'll help you create detailed image generation prompts based on: "${topic || original.substring(0, 80)}"
+  return `Here are enhanced image generation prompts for: "${topic || original.substring(0, 80)}"
 
 [Show More →]
 
-## Enhanced Prompts
+## Prompts by Style
 
-### Style 1: Photorealistic
-"${topic || "Subject"}, photorealistic style, ultra-high detail, natural lighting, sharp focus, 8K resolution, realistic textures, depth of field"
+**1. Photorealistic**
+> "${topic || "Subject"}, photorealistic, ultra-high detail, natural lighting, sharp focus, 8K resolution, realistic textures, depth of field"
 
-### Style 2: Artistic / Painterly
-"${topic || "Subject"}, digital art, painterly style, rich colors, atmospheric lighting, artistic interpretation, textured brushstrokes"
+**2. Artistic / Painterly**
+> "${topic || "Subject"}, digital art, painterly style, rich colors, atmospheric lighting, textured brushstrokes"
 
-### Style 3: Cinematic
-"${topic || "Subject"}, cinematic composition, dramatic lighting, film grain, anamorphic lens, cinematic color grading, moody atmosphere"
+**3. Cinematic**
+> "${topic || "Subject"}, cinematic composition, dramatic lighting, film grain, anamorphic lens, moody atmosphere"
 
-### Style 4: Minimalist
-"${topic || "Subject"}, minimalist style, clean composition, negative space, simple color palette, elegant and modern"
+**4. Minimalist**
+> "${topic || "Subject"}, minimalist, clean composition, negative space, simple color palette, elegant"
 
-> To generate actual AI images, add your API key to \`.env.local\` for DALL-E or similar image generation integration.${FEEDBACK}`;
+> To generate actual AI images, add an API key to \`.env.local\` for DALL-E or similar integration.${FEEDBACK}`;
 }
 
 function philosophyResponse(original: string, topic: string): string {
-  return `That's a thought-provoking question about "${topic || "this philosophical concept"}".
+  return `That's a deep question about "${topic || "this concept"}".
 
 [Show More →]
 
 ## Philosophical Exploration
 
 ### The Question
-"${original.substring(0, 100)}" touches on fundamental aspects of human understanding and experience.
+"${original.substring(0, 120)}" touches on fundamental questions about understanding and experience.
 
-### Historical Perspectives
-- **Ancient Philosophy**: Early thinkers approached this through metaphysics and ethics, seeking universal principles
-- **Enlightenment Thinkers**: Rationalist and empiricist traditions offered different methodologies
-- **Modern Philosophy**: Contemporary philosophers integrate insights from science, psychology, and diverse cultural traditions
+### Core Dimensions
 
-### Key Dimensions
+**Epistemology (What can we know?)**
+Questions about knowledge, truth, and justification. Different traditions offer varying answers about the nature and limits of understanding.
 
-**Epistemological — What can we know?**
-Questions about knowledge, truth, and justification are central. Different philosophical traditions offer varying answers about the nature and limits of understanding.
+**Ethics (What should we do?)**
+The moral implications and considerations around values, principles, and consequences.
 
-**Ethical — What should we do?**
-The moral implications and ethical dimensions invite consideration of values, principles, and consequences.
+**Existential (What does it mean?)**
+The human significance — how this question relates to personal meaning and experience.
 
-**Existential — What does it mean?**
-The human significance and personal relevance of these questions make them deeply meaningful.
+### Perspectives
+- **Ancient philosophy** approached this through first principles and metaphysical frameworks
+- **Modern thought** emphasizes empirical and rational approaches
+- **Contemporary views** integrate insights from science, psychology, and diverse cultural traditions
 
-### Synthesis
-Rather than arriving at a single definitive answer, the value of philosophical inquiry lies in the journey of questioning itself. Multiple frameworks offer complementary insights, and the most thoughtful approach integrates diverse perspectives.
+### A Thought
+Rather than a single answer, the value of philosophy often lies in the quality of the questions we ask. Different frameworks offer complementary insights.
 
-### Further Reflection
-- Consider how your own experiences shape your perspective
-- Engage with viewpoints different from your own
-- Recognize that some questions are valuable precisely because they resist easy answers
-
-What aspect of this fascinates you most?${FEEDBACK}`;
+What aspect fascinates you most?${FEEDBACK}`;
 }
 
 function healthResponse(original: string, topic: string): string {
@@ -841,37 +817,28 @@ function scienceResponse(original: string, topic: string): string {
 ## Scientific Overview
 
 ### Core Principle
-This topic is grounded in established scientific principles. Understanding the fundamentals provides insight into how and why phenomena occur.
+This topic is grounded in established scientific understanding. Let me explain how it works.
 
 ### How It Works
 
-**The Basic Mechanism:**
-1. **Initial Conditions**: Specific parameters that set the stage
-2. **Process**: The chain of events or reactions that occur
-3. **Outcome**: The observable result or effect
+**The Mechanism:**
+1. **Initial conditions** — specific parameters that set the stage
+2. **Process** — the chain of events or reactions
+3. **Outcome** — the observable result
 
-**Key Concepts:**
+**Key Scientific Concepts:**
 - Fundamental laws and principles at work
-- Important variables and their relationships
-- Measurable quantities and their significance
+- Important variables and relationships
+- Measurable quantities and significance
 
-### Evidence and Validation
-- Empirical observations support the main conclusions
-- Experimental data confirms theoretical predictions
-- Peer-reviewed research provides a foundation of knowledge
+### Evidence
+Scientific understanding is supported by empirical observation, experimental data, and peer-reviewed research. This provides a reliable foundation for the conclusions.
 
 ### Practical Applications
-This scientific understanding enables:
-- Technological innovations and advancements
-- Medical treatments and interventions
-- Environmental solutions and sustainability
-- Improved quality of life and understanding
+This knowledge enables technological innovation, medical advances, environmental solutions, and improved quality of life.
 
-### Ongoing Research
-Scientists continue to explore unanswered questions and refine our understanding through:
-- Advanced experimental techniques
-- Computational modeling and simulation
-- Interdisciplinary collaboration
+### Limitations & Open Questions
+Science is an ongoing process. Current understanding may evolve as new evidence emerges and techniques improve.
 
 Would you like me to explore any specific aspect in more depth?${FEEDBACK}`;
 }
@@ -883,33 +850,22 @@ function historyResponse(original: string, topic: string): string {
 
 ## Historical Overview
 
-### Origins and Background
-The story begins in a specific historical context that shaped subsequent developments. Understanding these origins provides crucial perspective.
+### Context
+Understanding where this fits in history provides crucial perspective on how we got here.
 
-### Timeline of Key Events
+### Key Timeline
+| Period | Development |
+|--------|-------------|
+| **Early origins** | Initial emergence and formation |
+| **Key developments** | Major transitions and evolution |
+| **Modern era** | Contemporary relevance |
 
-| Period | Development | Significance |
-|--------|-------------|--------------|
-| Early | Initial emergence and formation | Established foundations |
-| Middle | Major developments and transitions | Defined the trajectory |
-| Modern | Contemporary relevance and evolution | Shapes current understanding |
+### Significance
+- **Cultural impact**: How it shaped society and values
+- **Lessons**: Patterns and principles that remain relevant today
+- **Legacy**: How past developments influence current understanding
 
-### Key Figures and Contributions
-Several important individuals played pivotal roles through their ideas, actions, and innovations. Their contributions continue to influence how we understand this topic today.
-
-### Impact and Legacy
-The historical significance extends to:
-- **Cultural Influence**: How it shaped society and values
-- **Technological Impact**: Advances and innovations that followed
-- **Political/Economic Effects**: Changes in systems and structures
-
-### Lessons for Today
-History offers valuable lessons that remain relevant:
-- Patterns that recur across different eras
-- Principles that stand the test of time
-- Cautionary tales and success stories
-
-Is there a specific period or aspect you'd like to explore in more detail?${FEEDBACK}`;
+Is there a specific period or figure you'd like to explore in more detail?${FEEDBACK}`;
 }
 
 function techResponse(original: string, topic: string): string {
@@ -920,56 +876,41 @@ function techResponse(original: string, topic: string): string {
 ## Technology Analysis
 
 ### Overview
-This technology represents an important development in the digital landscape, with significant implications for how we work, create, and interact.
+This technology represents an important development with significant implications.
 
 ### Key Features
+- **What it does** — core functionality and purpose
+- **How it works** — technical architecture and design
+- **Problem it solves** — the need it addresses
 
-**Core Functionality:**
-- What it does and how it works at a fundamental level
-- The problem it solves or need it addresses
-- How it integrates with existing systems
+### Benefits & Impact
+- Increased efficiency and new capabilities
+- Improved user experiences and outcomes
+- Industry transformation potential
 
-**Technical Architecture:**
-- The underlying structure and design principles
-- Key components and how they interact
-- Performance characteristics and scalability
-
-### Benefits and Impact
-- Increases efficiency and productivity
-- Enables new capabilities and possibilities
-- Improves user experiences and outcomes
-
-### Challenges and Considerations
-- Learning curve and adoption barriers
-- Integration with existing workflows
-- Security, privacy, and ethical considerations
+### Considerations
+- Learning curve and adoption challenges
+- Integration with existing systems
+- Security, privacy, and ethical factors
 - Cost and resource requirements
 
-### Future Outlook
-This technology is evolving rapidly, with emerging trends pointing toward:
-- Greater integration with AI and machine learning
-- Enhanced performance and accessibility
-- Broader adoption across industries
+### Outlook
+Technology evolves rapidly. Key trends include greater AI integration, improved performance, and broader adoption.
 
-### Getting Started
-1. **Learn the fundamentals** through documentation and tutorials
-2. **Start small** with manageable projects to build experience
-3. **Join communities** for support, knowledge sharing, and best practices
-
-Would you like me to go deeper into any specific aspect?${FEEDBACK}`;
+Would you like me to explore any specific aspect in more depth?${FEEDBACK}`;
 }
 
 function mathResponse(original: string, topic: string): string {
-  return `Let me help you with this mathematical question.
+  return `Let me work through this math problem step by step.
 
 [Show More →]
 
-## Mathematical Approach
+## Mathematical Solution
 
-### Problem Understanding
+### Problem
 ${topic || original.substring(0, 100)}
 
-### Step-by-Step Solution
+### Step-by-Step Reasoning
 
 **Step 1: Identify what we know**
 - Given values and conditions
@@ -979,54 +920,49 @@ ${topic || original.substring(0, 100)}
 **Step 2: Set up the problem**
 - Organize the information
 - Choose the appropriate method
-- Formulate the equation or approach
+- Formulate the equation
 
 **Step 3: Solve**
-- Work through the calculation systematically
+- Work through systematically
 - Check each step for accuracy
-- Consider alternative approaches
 
 **Step 4: Verify**
-- Check if the answer makes sense
-- Test with sample values if possible
+- Does the answer make sense?
+- Test with sample values
 - Consider edge cases
 
-### General Formula
-For this type of problem, the general approach involves applying established mathematical principles and following a systematic process.
-
-> For specific calculations, please provide the exact numbers or equations you'd like me to work with, and I'll provide a precise solution.${FEEDBACK}`;
+### Result
+The solution follows from applying the correct methodology. For precise calculations, please provide specific numbers or equations.${FEEDBACK}`;
 }
 
 function rwandaResponse(original: string, msg: string, topic: string): string {
-  return `Muraho! (Hello in Kinyarwanda!) I'd be happy to discuss ${topic || "Rwanda"}.
+  return `Muraho! I'd be happy to discuss ${topic || "Rwanda"}.
 
 [Show More →]
 
-## Rwanda: The Land of a Thousand Hills
+## Rwanda: Land of a Thousand Hills
 
-Rwanda is a beautiful East African nation with a rich culture, stunning landscapes, and remarkable progress.
+Rwanda is a remarkable East African nation with a rich culture, stunning landscapes, and inspiring progress.
 
 ### Key Facts
-- **Capital**: Kigali — known as one of Africa's cleanest and safest cities
-- **Languages**: Kinyarwanda, French, English, Swahili
-- **Population**: Approximately 13 million
-- **Known For**: Mountain gorillas, rolling hills, vibrant culture
+| Aspect | Detail |
+|--------|--------|
+| **Capital** | Kigali — one of Africa's cleanest and safest cities |
+| **Languages** | Kinyarwanda, French, English, Swahili |
+| **Population** | ~13 million |
+| **Known For** | Mountain gorillas, rolling hills, vibrant culture |
 
 ### Natural Wonders
-- **Volcanoes National Park**: Home to endangered mountain gorillas and golden monkeys
-- **Lake Kivu**: Stunning freshwater lake with beautiful beaches and island resorts
-- **Nyungwe Forest National Park**: Ancient rainforest with chimpanzees and a canopy walkway
-- **Akagera National Park**: Savannah wildlife including the Big Five
+- **Volcanoes National Park** — endangered mountain gorillas and golden monkeys
+- **Lake Kivu** — stunning freshwater lake with beautiful beaches
+- **Nyungwe Forest** — ancient rainforest with chimpanzees and canopy walkway
+- **Akagera National Park** — savannah wildlife including the Big Five
 
-### Culture & People
-Rwandans are known for their warmth, resilience, and community spirit. The concept of *Ubuntu* — "I am because we are" — is central to Rwandan culture. Traditional dance, music, and crafts remain vibrant parts of daily life.
+### Culture
+Rwandans are known for warmth, resilience, and community spirit. The concept of *Ubuntu* — "I am because we are" — is central to Rwandan culture.
 
 ### Modern Development
-Rwanda has made remarkable progress in:
-- **Technology**: Becoming a regional tech hub with initiatives like the Kigali Innovation City
-- **Environment**: Leading Africa in environmental protection and green initiatives
-- **Gender Equality**: One of the highest rates of women in parliament globally
-- **Education**: Strong focus on education and youth development
+Rwanda has become a regional tech hub with strong commitments to environmental protection, gender equality (among the highest rates of women in parliament globally), and education.
 
 Is there a specific aspect of Rwanda you'd like to learn more about?${FEEDBACK}`;
 }
