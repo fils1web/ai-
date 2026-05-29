@@ -30,8 +30,7 @@ export default function Home() {
   const { activeTab, customLogo, appName } = useApp();
 
   return (
-    <AuthGate>
-      <div className="flex flex-col h-screen text-white">
+    <div className="flex flex-col h-screen text-white">
         <BackgroundSlideshow />
 
         <header className="glass border-b border-white/5 px-4 py-2 z-30">
@@ -56,6 +55,7 @@ export default function Home() {
                 <p className="text-[10px] text-white/30 -mt-0.5">Intelligent Assistant</p>
               </div>
             </div>
+            <AuthGate />
           </div>
           <TabNavigation />
         </header>
@@ -79,6 +79,5 @@ export default function Home() {
 
         <FloatingMenu />
       </div>
-    </AuthGate>
   );
 }
