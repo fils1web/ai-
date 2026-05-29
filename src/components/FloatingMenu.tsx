@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "@/context/AppContext";
-import type { FloatingAction, TabId } from "@/types";
+import { createMessage } from "@/lib/utils";
+import type { FloatingAction, TabId, AIMode } from "@/types";
 import {
   Search,
   Code,
@@ -15,24 +16,87 @@ import {
   X,
 } from "lucide-react";
 
-const actions: { id: FloatingAction; label: string; icon: React.ReactNode; tab: TabId }[] = [
-  { id: "research", label: "Deep Research", icon: <Search size={18} />, tab: "research" },
-  { id: "coding", label: "Coding Engineer", icon: <Code size={18} />, tab: "chat" },
-  { id: "translation", label: "Translation", icon: <Languages size={18} />, tab: "translator" },
-  { id: "vision", label: "Vision Analysis", icon: <Eye size={18} />, tab: "chat" },
-  { id: "documents", label: "Document Intelligence", icon: <FileText size={18} />, tab: "summary" },
-  { id: "strategy", label: "Strategy", icon: <Lightbulb size={18} />, tab: "pro" },
-  { id: "summarize", label: "Summarize", icon: <AlignLeft size={18} />, tab: "summary" },
+interface MenuAction {
+  id: FloatingAction;
+  label: string;
+  icon: React.ReactNode;
+  tab: TabId;
+  mode: AIMode;
+  welcomeMsg: string;
+}
+
+const actions: MenuAction[] = [
+  {
+    id: "research",
+    label: "Deep Research",
+    icon: <Search size={18} />,
+    tab: "research",
+    mode: "research",
+    welcomeMsg: "",
+  },
+  {
+    id: "coding",
+    label: "Coding Engineer",
+    icon: <Code size={18} />,
+    tab: "chat",
+    mode: "coding",
+    welcomeMsg: "**Coding Engineer Mode activated.** I'm now your senior software engineer. I can write, debug, review, and optimize code in any language. [Show More →]\n\nDescribe what you need — a function, an algorithm, a full architecture, debugging help, or code review. I'll provide production-quality solutions with explanations.\n\n---\n**💡 Feedback**\n[📋 Copy] | [⬇️ Download] | [🔗 Share]",
+  },
+  {
+    id: "translation",
+    label: "Translation",
+    icon: <Languages size={18} />,
+    tab: "translator",
+    mode: "translation",
+    welcomeMsg: "",
+  },
+  {
+    id: "vision",
+    label: "Vision Analysis",
+    icon: <Eye size={18} />,
+    tab: "chat",
+    mode: "vision",
+    welcomeMsg: "**Vision Analysis Mode activated.** Upload an image and I'll analyze it in detail — describing objects, text, colors, context, and more. [Show More →]\n\nUse the file upload below to attach an image, or describe what you'd like me to analyze visually.\n\n---\n**💡 Feedback**\n[📋 Copy] | [⬇️ Download] | [🔗 Share]",
+  },
+  {
+    id: "documents",
+    label: "Document Intelligence",
+    icon: <FileText size={18} />,
+    tab: "summary",
+    mode: "documents",
+    welcomeMsg: "",
+  },
+  {
+    id: "strategy",
+    label: "Strategy",
+    icon: <Lightbulb size={18} />,
+    tab: "pro",
+    mode: "strategy",
+    welcomeMsg: "",
+  },
+  {
+    id: "summarize",
+    label: "Summarize",
+    icon: <AlignLeft size={18} />,
+    tab: "summary",
+    mode: "summarize",
+    welcomeMsg: "",
+  },
 ];
 
 export default function FloatingMenu() {
   const [isOpen, setIsOpen] = useState(false);
-  const { setActiveTab, setActiveFloatingAction } = useApp();
+  const { setActiveTab, setActiveFloatingAction, setActiveMode, addMessage } = useApp();
 
-  const handleAction = (action: (typeof actions)[0]) => {
+  const handleAction = (action: MenuAction) => {
     setActiveFloatingAction(action.id);
+    setActiveMode(action.mode);
     setActiveTab(action.tab);
     setIsOpen(false);
+
+    if (action.welcomeMsg) {
+      addMessage(action.tab, createMessage("assistant", action.welcomeMsg));
+    }
   };
 
   return (

@@ -16,6 +16,16 @@ export type FloatingAction =
   | "strategy"
   | "summarize";
 
+export type AIMode =
+  | "general"
+  | "coding"
+  | "vision"
+  | "documents"
+  | "strategy"
+  | "summarize"
+  | "research"
+  | "translation";
+
 export type MessageRole = "user" | "assistant" | "system";
 
 export interface Message {
