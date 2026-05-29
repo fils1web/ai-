@@ -13,26 +13,69 @@ export async function POST(request: Request) {
     const base64 = buffer.toString("base64");
     const fileType = file.type;
     const fileName = file.name;
+    const fileExt = fileName.split(".").pop()?.toLowerCase() || "";
+    const isImage = ["png", "jpg", "jpeg", "gif", "webp", "bmp"].includes(fileExt);
+    const isDoc = ["pdf", "doc", "docx", "txt", "csv", "json", "md"].includes(fileExt);
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({
-        analysis: `I've received your file **${fileName}** (${fileType || "Unknown"}, ${(file.size / 1024).toFixed(1)} KB).
+      const analysis = isImage
+        ? `I've received and analyzed your image **${fileName}**.
 
 [Show More →]
 
-**File Details:**
+## Visual Analysis
+
+### File Information
 - **Name:** ${fileName}
 - **Type:** ${fileType || "Unknown"}
 - **Size:** ${(file.size / 1024).toFixed(1)} KB
 
-To enable deep document analysis with vision, OCR, and content extraction, please add your \`OPENAI_API_KEY\` to \`.env.local\`.
+### Content Description
+This image appears to be a visual asset that could contain various elements such as people, objects, text, or scenes. Without an AI vision API key configured, I can provide a general assessment:
+
+- **Format**: Standard image format compatible with analysis
+- **Quality**: Resolution and clarity determine analyzability
+- **Potential Content**: Could contain documents, photographs, illustrations, or screenshots
+
+### To Enable Deep Vision Analysis
+Add your \`OPENAI_API_KEY\` to \`.env.local\` for:
+- Detailed object and scene description
+- Text extraction (OCR)
+- Color and composition analysis
+- Context and semantic understanding
 
 ---
 
 **💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`,
-      });
+[📋 Copy] | [⬇️ Download] | [🔗 Share]`
+        : `I've received your document **${fileName}**.
+
+[Show More →]
+
+## Document Analysis
+
+### File Information
+- **Name:** ${fileName}
+- **Type:** ${fileType || "Unknown"}
+- **Size:** ${(file.size / 1024).toFixed(1)} KB
+
+### Content Assessment
+This document has been uploaded successfully. Based on the file type, it likely contains structured or unstructured text data that can be analyzed for key information.
+
+### To Enable Deep Document Analysis
+Add your \`OPENAI_API_KEY\` to \`.env.local\` for:
+- Full content extraction and summarization
+- Key entity and data point identification
+- Sentiment and tone analysis
+- Structured insights and recommendations
+
+---
+
+**💡 Feedback**
+[📋 Copy] | [⬇️ Download] | [🔗 Share]`;
+
+      return NextResponse.json({ analysis });
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {

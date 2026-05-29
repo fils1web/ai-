@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { generateLocalResponse } from "@/lib/local-ai";
 
 export async function POST(request: Request) {
   try {
@@ -7,31 +8,24 @@ export async function POST(request: Request) {
     const apiKey = process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY;
     const useClaude = !!process.env.ANTHROPIC_API_KEY;
 
+    const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === "user");
+    const userContent = lastUserMsg?.content || "";
+
+    const modeMatch = systemPrompt?.match(/Coding Engineer Mode|Vision Analysis Mode|Deep Research Mode|Summarization Mode|Strategy Mode|Translation/i);
+    let mode = "general";
+    if (modeMatch) {
+      const match = modeMatch[0];
+      if (match.includes("Coding")) mode = "coding";
+      else if (match.includes("Vision")) mode = "vision";
+      else if (match.includes("Research")) mode = "research";
+      else if (match.includes("Summar")) mode = "summarize";
+      else if (match.includes("Strategy")) mode = "strategy";
+      else if (match.includes("Transl")) mode = "translation";
+    }
+
     if (!apiKey) {
-      return NextResponse.json({
-        content: `Hello! I'm **Bizimana AI**, your powerful intelligent assistant. I'm currently running in demo mode.
-
-[Show More →]
-
-To unlock my full capabilities — including advanced reasoning, coding, vision analysis, deep research, and document intelligence — please add your **OpenAI API key** or **Anthropic API key** to your environment variables (\`.env.local\`).
-
-**What I can still help you with:**
-- General conversation and Q&A
-- File analysis and document understanding
-- Structured summaries and research
-- Translation between 100+ languages
-- Project planning and strategy consulting
-
-**Getting Started:**
-1. Create a \`.env.local\` file in the project root
-2. Add \`OPENAI_API_KEY=your_key_here\` or \`ANTHROPIC_API_KEY=your_key_here\`
-3. Restart the dev server
-
----
-
-**💡 Feedback**
-[📋 Copy] | [⬇️ Download] | [🔗 Share]`,
-      });
+      const localResponse = generateLocalResponse(userContent, mode, messages);
+      return NextResponse.json({ content: localResponse });
     }
 
     if (useClaude) {
