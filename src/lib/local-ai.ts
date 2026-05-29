@@ -141,47 +141,43 @@ function isMath(m: string): boolean {
 }
 
 function greetingResponse(isFollowUp: boolean): string {
-  if (isFollowUp) return `Welcome back! I'm glad you're here. What can I help you with this time?${FEEDBACK}`;
-  return `Hello! I'm **Bizimana AI**, your intelligent assistant. I'm here to help you with any questions, tasks, or creative projects. Feel free to ask me anything — from coding and research to writing and general knowledge. How can I assist you today?${FEEDBACK}`;
+  if (isFollowUp) return `Welcome back! Good to see you again. What's on your mind today?${FEEDBACK}`;
+  return `Hey there! I'm **Bizimana AI** — nice to meet you. I can help with coding, research, writing, translation, or just about any question you have. What would you like to explore today?${FEEDBACK}`;
 }
 
 function identityResponse(): string {
-  return `I am **Bizimana AI** — a highly intelligent, professional, and reliable AI assistant designed to serve users in Rwanda and around the world.
+  return `I'm **Bizimana AI** — a conversational AI assistant built to help you with just about anything. Think of me as a knowledgeable friend who's good at explaining things, writing code, breaking down complex topics, and helping you get stuff done.
 
 [Show More →]
 
-I was developed to match the quality of leading AI systems like Claude and GPT-4o. Here's what I can do:
+Here's what I'm pretty good at:
 
-**Core Capabilities:**
-- **General Q&A** — Answer questions on any topic with depth and accuracy
-- **Coding** — Write, debug, review, and explain code in any language
-- **Research** — Conduct thorough multi-perspective analysis with structured findings
-- **Writing** — Compose essays, articles, stories, poems, emails, and professional content
-- **Translation** — Translate between 100+ languages while preserving meaning and tone
-- **Strategy** — Provide high-level business and project consulting
-- **Summarization** — Distill complex content into clear structured summaries
-- **Vision Analysis** — Describe and interpret images in detail
+**General Q&A** — Ask me about anything. Science, history, technology, philosophy, you name it. I'll give you a thoughtful answer.
+**Coding** — I can write, debug, and explain code in most programming languages. JavaScript, Python, TypeScript, Java, Go, Rust, and plenty more.
+**Writing** — Essays, emails, stories, articles, poems. Tell me what you need and I'll draft it.
+**Research** — Give me a topic and I'll break it down from multiple angles with structured findings.
+**Translation** — I can translate between many languages while keeping the meaning and tone intact.
+**Strategy** — If you're planning a project or business, I can help think through the approach.
 
-**My Design Principles:**
-- Think step-by-step before responding
-- Prioritize quality, depth, and user value
-- Use natural, friendly, yet professional tone
-- Maintain high reasoning standards
-- Always be honest about limitations
+**How I like to work:**
+- I think things through before answering
+- I keep it natural and conversational
+- I'm honest when I'm not sure about something
+- I'll always try to give you something useful
 
-How can I put my capabilities to work for you today?${FEEDBACK}`;
+So, what can I help you with today?${FEEDBACK}`;
 }
 
 function thanksResponse(): string {
-  return `You're most welcome! It's genuinely my pleasure to help you. If there's anything else you need — whether it's a follow-up question, a new topic, or deeper exploration — just let me know. I'm here for you.${FEEDBACK}`;
+  return `You're welcome! Happy to help. If anything else comes up, just ask.${FEEDBACK}`;
 }
 
 function farewellResponse(): string {
-  return `Goodbye! It was a pleasure assisting you. Feel free to return anytime you need help, information, or creative input. Wishing you a wonderful and productive day ahead!${FEEDBACK}`;
+  return `Take care! Was great talking with you. Come back anytime you need help with something.${FEEDBACK}`;
 }
 
 function howAreYouResponse(): string {
-  return `I'm doing great, thank you for asking! I'm fully charged and ready to help. I'm running on my advanced reasoning engine and I'm excited to tackle whatever questions or tasks you have. How can I assist you today?${FEEDBACK}`;
+  return `Doing well, thanks for asking! Ready and available to help you with whatever you need. What's on your mind?${FEEDBACK}`;
 }
 
 function jokeResponse(): string {
@@ -212,107 +208,84 @@ function codingResponse(original: string, msg: string, topic: string): string {
 
 [Show More →]
 
-## Debugging Approach
+Alright, let's debug this step by step.
 
-### Step 1: Identify the Issue
-When debugging, first isolate where the error occurs. Common sources include:
-- **Syntax errors**: Missing brackets, semicolons, or incorrect syntax
-- **Runtime errors**: Null references, type mismatches, or undefined variables
-- **Logic errors**: Code runs but produces wrong results
+**First thing** — isolate where things go wrong. Is it a compile error, a runtime crash, or just wrong output? That tells us a lot.
 
-### Step 2: Systematic Investigation
+**Common culprits I'd check:**
+- Syntax issues — missing brackets, typos, incorrect imports
+- Runtime errors — null references, undefined variables, type mismatches
+- Logic bugs — the code runs but doesn't do what you expect
+
+**Quick way to investigate:**
 \`\`\`${lang?.toLowerCase() || "javascript"}
-// Add console.log or print statements to trace execution
-console.log("Variable state:", variableName);
+console.log("State at this point:", yourVariable);
 
-// Use try/catch for error handling
 try {
-  // Suspicious code block
-} catch (error) {
-  console.error("Error caught:", error.message);
+  // Suspicious code
+} catch (err) {
+  console.error("Got an error:", err.message);
 }
 \`\`\`
 
-### Step 3: Common Fixes
-1. Check variable scope and initialization
-2. Verify function parameters and return values
-3. Ensure async operations are properly awaited
-4. Validate input data types and formats
+**Things to double-check:**
+1. Are all your variables defined before use?
+2. Are async calls being awaited properly?
+3. Are the data types what you expect them to be?
+4. Any off-by-one errors in loops?
 
-### Step 4: Prevention
-- Write unit tests before deploying
-- Use TypeScript for type safety
-- Add input validation
-- Implement proper error boundaries
-
-Would you like me to help debug a specific piece of code? Share your code snippet and I'll provide a targeted fix.${FEEDBACK}`;
+If you share the specific code snippet, I can take a closer look and give you a targeted fix.${FEEDBACK}`;
   }
 
   return `${response}
 
 [Show More →]
 
-## Implementation
+Here's a practical implementation to get you started:
 
 \`\`\`${lang?.toLowerCase() || "javascript"}
 /**
  * Solution for: ${original.substring(0, 60)}
- * Language: ${lang || "JavaScript"}
  */
 
-// Main implementation
 function ${topic.split(/[,\s]+/)[0] || "solve"}(input) {
-  // Validate input
   if (!input) {
     throw new Error("Input is required");
   }
 
-  // Process the data
   const result = {
-    input: input,
+    input,
     processed: true,
     timestamp: new Date().toISOString(),
-    output: transform(input)
+    output: processInput(input)
   };
 
   return result;
 }
 
-function transform(data) {
-  // Core transformation logic
-  // Customize based on your requirements
+function processInput(data) {
+  // This is where the main logic goes
+  // Customize based on what you need
   return Array.isArray(data)
-    ? data.map(item => processItem(item))
-    : processItem(data);
+    ? data.map(item => transform(item))
+    : transform(data);
 }
 
-function processItem(item) {
+function transform(item) {
   return {
     original: item,
-    processed: process(item),
-    status: "complete"
+    result: typeof item === "string" ? item.trim() : item,
+    status: "ok"
   };
 }
-
-function process(value) {
-  // Your processing logic here
-  return typeof value === "string" ? value.trim() : value;
-}
 \`\`\`
 
-## Key Points
-- **Error handling**: Input validation and graceful error management
-- **Type safety**: Proper type checking and handling
-- **Modularity**: Separated concerns for maintainability
-- **Performance**: Optimized for common use cases
+**A few notes:**
+- Input validation is always a good idea
+- The code is structured so you can easily modify the core logic
+- Error handling is built in from the start
 
-## Usage Example
-\`\`\`${lang?.toLowerCase() || "javascript"}
-const result = solve(yourInput);
-console.log(result);
-\`\`\`
-
-Would you like me to adjust this for your specific use case or provide a more targeted implementation?${FEEDBACK}`;
+Want me to adjust this for your specific use case? Just let me know what you're building.${FEEDBACK}`;
 }
 
 function researchResponse(original: string, topic: string): string {
@@ -525,70 +498,32 @@ function explainResponse(original: string, msg: string, topic: string): string {
 
 ${knowledge}
 
-## Key Points
-- **Core concept**: Understanding the fundamental principles
-- **How it works**: The mechanism and process
-- **Why it matters**: Practical significance and applications
+So at its core, that's the basic idea. But there's more to it depending on what you're trying to do with it. If you're learning, I'd suggest starting with the fundamentals and then looking at some practical examples. If you're building something, I can help with specific implementation details.
 
-## Example
-\`\`\`
-// Practical illustration
-const example = {
-  concept: "${target}",
-  purpose: "To demonstrate key principles",
-  application: "Real-world use cases"
-};
-\`\`\`
-
-## Related Concepts
-- Complementary ideas that enhance understanding
-- Prerequisite knowledge for deeper learning
-- Advanced topics for further exploration
-
-Is there a specific aspect of ${target} you'd like me to elaborate on?${FEEDBACK}`;
+What context are you exploring this for? That way I can tailor the explanation to be most useful for you.${FEEDBACK}`;
   }
 
-  return `Let me explain **${target}** in a clear and structured way.
+  return `Let me explain **${target}** in a straightforward way.
 
 [Show More →]
 
-## What Is ${capitalize(target)}?
+So **${target}** — what is it really?
 
-${capitalize(target)} refers to a concept that encompasses several important aspects. Understanding it provides valuable insights into how things work and why they matter.
+At its simplest, it's about understanding how something works or what something means. The concept itself has a few layers worth looking at:
 
-## Key Aspects
+**The basic idea** — what ${target} actually refers to and why people talk about it.
 
-### 1. Definition and Core Concept
-At its foundation, ${target} is about understanding the essential principles that define it. This includes:
-- The basic definition and scope
-- Key characteristics and properties
-- How it relates to broader contexts
+**How it works** — the mechanics or principles behind it. What makes it tick?
 
-### 2. How It Works
-The mechanism involves several interconnected elements:
-- **Input**: The conditions or data required
-- **Process**: The transformation or operation
-- **Output**: The result or outcome
+**Why it matters** — how this knowledge is useful in practice. Where does it apply?
 
-### 3. Why It's Important
-Understanding ${target} matters because:
-- It provides foundational knowledge for related topics
-- It has practical applications in various fields
-- It helps in making informed decisions
+Here's a simple way to think about it:
 
-## Practical Example
-Consider a simple scenario to illustrate:
-- **Context**: A typical situation where this applies
-- **Application**: How it functions in practice
-- **Result**: The observable outcome
+\`\`\`
+${target} = core principles + how it works + why it's useful
+\`\`\`
 
-## Common Questions
-- **Q**: How does this differ from similar concepts?
-- **A**: The key distinctions lie in specific aspects
-- **Q**: Where is this commonly applied?
-- **A**: It appears in numerous practical contexts
-
-Would you like me to explore any specific aspect in more depth?${FEEDBACK}`;
+If you have a specific aspect you want to dig into — practical applications, historical context, technical details — just let me know and I'll focus there.${FEEDBACK}`;
 }
 
 function howToResponse(original: string, topic: string): string {
@@ -1050,72 +985,36 @@ function generalResponse(original: string, msg: string, topic: string, isFollowU
 
 [Show More →]
 
-**Additional Context:**
-${capitalize(topic || "this topic")} is a subject with many interesting facets. Here are some key points to consider:
-
-1. **Core Principles**: Understanding the fundamentals provides a solid foundation
-2. **Practical Applications**: This knowledge is applied in various real-world contexts
-3. **Related Topics**: Several connected subjects can deepen your understanding
-
-**Would you like to know more?**
-I'm happy to dive deeper into any specific aspect that interests you. Just let me know what you'd like to explore further.${FEEDBACK}`;
+${capitalize(topic || "this topic")} is a really interesting subject with a lot of depth. The fundamentals give you a solid foundation, and there are plenty of practical applications in the real world. If you're curious about any specific angle — how it works, where it's used, or how to get started — just let me know and I'll dive deeper.${FEEDBACK}`;
   }
 
   if (isFollowUp) {
-    return `Thank you for the follow-up. Let me expand on that.
+    return `Good follow-up. Let me expand on that a bit more.
 
 [Show More →]
 
-Based on our conversation, I understand you're interested in "${topic || "this topic"}". Here are my thoughts:
+So based on what we've been discussing around "${topic || "this topic"}", here's what I think:
 
-**Key Considerations:**
-1. This is a rich topic with multiple dimensions worth exploring
-2. The context you've provided helps frame a meaningful response
-3. There are several angles to consider for a comprehensive understanding
+There are a few different ways to look at this, and the right approach really depends on what you're trying to accomplish. The context you've shared helps narrow things down.
 
-**My Perspective:**
-The subject encompasses important aspects that interconnect in meaningful ways. By examining each component, we can develop a thorough understanding.
+To give you the most useful answer, it would help to know — what specifically interests you about this? Are you looking for practical guidance, deeper understanding, or something else entirely?
 
-**To help you better, could you clarify:**
-- What specific aspect interests you most?
-- Is there a particular context or application you have in mind?
-- Would you like examples, explanations, or practical guidance?
-
-I'm here to help with whatever direction you'd like to take.${FEEDBACK}`;
+Happy to go in whatever direction works best for you.${FEEDBACK}`;
   }
 
-  return `Thank you for your question about "${topic || original.substring(0, 80)}". Let me provide a thoughtful response.
+  return `That's an interesting question about "${topic || original.substring(0, 80)}". Let me share my thoughts.
 
 [Show More →]
 
-## Response
+So here's the thing about ${topic || "this"} — it's one of those topics where the answer depends a lot on context and what you're actually trying to understand. There are a few key angles worth considering:
 
-### Understanding Your Question
-You've raised an interesting point about ${topic || "this topic"}. Let me break it down for you.
+**First**, it helps to think about the bigger picture. What's the core idea here and why does it matter?
 
-### Key Points to Consider
-1. **Context Matters**: The answer depends on various factors including perspective and circumstances
-2. **Multiple Dimensions**: This topic has several layers worth exploring
-3. **Practical Implications**: Understanding this can have real-world applications
+**Second**, there are some practical aspects that make this relevant to real-world situations.
 
-### My Analysis
-Based on my knowledge and reasoning, here's what I can share:
+**Third**, like many interesting topics, there's always more depth to explore if you want to go there.
 
-The subject encompasses several important aspects that interconnect in meaningful ways. By examining each component, we can develop a comprehensive understanding.
-
-### Key Insights
-- Consider the broader context and implications
-- Look at evidence and examples for clarity
-- Think about how this applies to your specific situation
-
-### Next Steps
-Would you like me to:
-- Dive deeper into a specific aspect?
-- Provide examples or analogies?
-- Explore related topics?
-- Offer practical guidance or actionable advice?
-
-I'm here to help with whatever direction you'd like to take this conversation!${FEEDBACK}`;
+What aspect are you most curious about? I'm happy to go into more detail on whatever part interests you most.${FEEDBACK}`;
 }
 
 function detectLanguage(msg: string): string | null {
