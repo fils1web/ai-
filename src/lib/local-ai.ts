@@ -8,6 +8,21 @@ const KB: Record<string, string> = {
   typescript: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds static typing, interfaces, and enhanced tooling for large-scale applications.",
   react: "React is a JavaScript library for building user interfaces, maintained by Meta. It uses a component-based architecture with a virtual DOM for efficient rendering.",
   nextjs: "Next.js is a React framework for production-grade applications. It provides server-side rendering, static generation, API routes, and file-based routing out of the box.",
+  ai: "Artificial Intelligence (AI) refers to machines or systems that can perform tasks that typically require human intelligence. This includes learning, reasoning, problem-solving, perception, and language understanding.",
+  machinelearning: "Machine Learning is a subset of AI where systems learn from data rather than being explicitly programmed. It powers recommendation systems, speech recognition, and predictive analytics.",
+  blockchain: "Blockchain is a distributed ledger technology where data is stored across a network of computers. It's best known as the foundation for cryptocurrencies but has applications in supply chain, voting, and identity verification.",
+  cloud: "Cloud computing delivers computing services (servers, storage, databases, networking, software) over the internet. Major providers include AWS, Google Cloud, and Microsoft Azure.",
+  css: "CSS (Cascading Style Sheets) is a stylesheet language used to describe the presentation of HTML documents. It controls layout, colors, fonts, and responsive design.",
+  html: "HTML (HyperText Markup Language) is the standard markup language for creating web pages. It structures content using elements like headings, paragraphs, links, and images.",
+  nodejs: "Node.js is a JavaScript runtime built on Chrome's V8 engine that allows JavaScript to run on servers. It's known for its event-driven, non-blocking I/O model.",
+  docker: "Docker is a platform for developing, shipping, and running applications in containers. Containers are lightweight, portable, and consistent across environments.",
+  api: "An API (Application Programming Interface) defines how different software components should interact. REST and GraphQL are common API architecture styles.",
+  database: "A database is an organized collection of structured data. Common types include relational (SQL), document (NoSQL), key-value, and graph databases.",
+  git: "Git is a distributed version control system that tracks changes in source code. It enables collaboration, branching, and history tracking for software projects.",
+  linux: "Linux is a free, open-source operating system kernel. It powers most servers, Android devices, and is the foundation of many development environments.",
+  wassup: "'Wassup' is a casual greeting short for 'What's up?' — similar to 'How are you?' or 'What's going on?'. It's informal and commonly used in friendly conversation.",
+  wast: "'Wast' doesn't have a standard meaning. It could be a typo for 'waste' (waste) or 'what's that'. Could you clarify what you meant so I can give you a helpful answer?",
+  watsup: "'Watsup' is another informal spelling of 'What's up?' — a casual greeting asking how someone is or what they're doing.",
 };
 
 function getKnowledge(query: string): string {
@@ -988,33 +1003,85 @@ function generalResponse(original: string, msg: string, topic: string, isFollowU
 ${capitalize(topic || "this topic")} is a really interesting subject with a lot of depth. The fundamentals give you a solid foundation, and there are plenty of practical applications in the real world. If you're curious about any specific angle — how it works, where it's used, or how to get started — just let me know and I'll dive deeper.${FEEDBACK}`;
   }
 
-  if (isFollowUp) {
-    return `Good follow-up. Let me expand on that a bit more.
+  const topics = topic.split(", ").filter(Boolean);
+  const mainTopic = topics[0] || "this";
+  const secondTopic = topics[1] || null;
+
+  if (/\b(what|how|why|when|where|which|who)\b/.test(msg) || /\?$/.test(original.trim())) {
+    const question = original.length > 80 ? original.substring(0, 80) + "..." : original;
+    return `That's a great question. Let me break it down for you.
+
+${question}
 
 [Show More →]
 
-So based on what we've been discussing around "${topic || "this topic"}", here's what I think:
+Alright, let me give you a thoughtful answer on **${mainTopic}**.
 
-There are a few different ways to look at this, and the right approach really depends on what you're trying to accomplish. The context you've shared helps narrow things down.
+Here's what I'd say: ${mainTopic} is a topic with a lot of interesting dimensions to explore, and the way you approach it really depends on what you're trying to understand or accomplish.
 
-To give you the most useful answer, it would help to know — what specifically interests you about this? Are you looking for practical guidance, deeper understanding, or something else entirely?
+**First, the big picture:**
+Think of ${mainTopic} as something that touches multiple areas — there isn't just one way to look at it. The most useful approach is to consider both the fundamentals and how they apply in practice.
 
-Happy to go in whatever direction works best for you.${FEEDBACK}`;
+**Here's what matters most:**
+- Understanding the core principles behind ${mainTopic} gives you a solid foundation
+- Seeing how it applies in real situations makes it practical
+- Knowing the common challenges and how to navigate them saves time
+
+**A practical way to think about it:**
+${mainTopic} isn't just about theory — it's about what works in your specific context. The key is to start with what you know, build from there, and adjust as you go.
+
+${secondTopic ? `Regarding **${secondTopic}** — that adds another layer worth considering. The interplay between these aspects often determines the best approach.` : ""}
+
+If you give me a bit more context about what specifically you're curious about with ${mainTopic}, I can tailor this further and go as deep as you'd like.${FEEDBACK}`;
   }
 
-  return `That's an interesting question about "${topic || original.substring(0, 80)}". Let me share my thoughts.
+  if (isFollowUp) {
+    const followUpTopics = extractKeyTerms(original);
+    const ft = followUpTopics.length > 0 ? followUpTopics.join(", ") : mainTopic;
+    return `I'm glad you're digging deeper into **${ft}**. Let me expand on that.
 
 [Show More →]
 
-So here's the thing about ${topic || "this"} — it's one of those topics where the answer depends a lot on context and what you're actually trying to understand. There are a few key angles worth considering:
+Building on what we've been talking about, here's more to consider about **${ft}**:
 
-**First**, it helps to think about the bigger picture. What's the core idea here and why does it matter?
+**To go deeper:**
+- One angle worth exploring is how ${ft} connects to broader concepts and ideas — understanding those connections often reveals insights you might not spot otherwise
+- Another practical angle: thinking about ${ft} in terms of real examples or use cases can make it click more than abstract explanation
+- And it's worth considering what the common misconceptions or pitfalls are — knowing those upfront saves a lot of time
 
-**Second**, there are some practical aspects that make this relevant to real-world situations.
+**Something I find interesting:**
+When people explore ${ft}, they often discover that the most valuable insights come from connecting it to what they already know. It's not about starting from scratch — it's about building bridges.
 
-**Third**, like many interesting topics, there's always more depth to explore if you want to go there.
+**Quick thought:**
+Would you like me to focus more on theory, practical application, or something in between? That way I can tailor the next part of our conversation to be most helpful for what you're working on.${FEEDBACK}`;
+  }
 
-What aspect are you most curious about? I'm happy to go into more detail on whatever part interests you most.${FEEDBACK}`;
+  const nouns = msg.split(/\s+/).filter(w => w.length > 2 && !["the", "and", "for", "are", "not", "but", "can", "all", "was", "got", "has", "had", "its", "how", "why", "you", "get", "out", "use", "two", "way", "say", "who", "any", "new", "now", "own", "may", "see"].includes(w));
+  const specific = nouns.length > 3 ? nouns.slice(0, 3).join(", ") : mainTopic;
+
+  return `I hear you on **${specific}**. Let me share some thoughts on that.
+
+[Show More →]
+
+So here's my take on **${specific}**:
+
+It's one of those things where the devil's in the details — the core idea might be straightforward, but the real value comes from how you apply it. Let me break it down.
+
+**What I think matters most:**
+
+**1. Getting the fundamentals right.**
+Before diving into advanced stuff, make sure you have a solid handle on the basics of ${specific}. Everything else builds on that foundation.
+
+**2. Context is everything.**
+How ${specific} works in practice depends a lot on your specific situation — what tools you're using, what you're trying to achieve, what constraints you're working with. The same principles apply differently in different contexts.
+
+**3. Learning by doing.**
+The best way to really understand ${specific} is to work with it directly. Theory gives you direction, but hands-on experience gives you real understanding.
+
+**A perspective I find useful:**
+Don't try to learn everything about ${specific} all at once. Focus on what's most relevant to what you're doing right now, and let your understanding grow naturally as you go deeper.
+
+I'd love to hear more about what specifically you're working on or curious about with ${specific} — that way I can give you more targeted and useful information.${FEEDBACK}`;
 }
 
 function detectLanguage(msg: string): string | null {
