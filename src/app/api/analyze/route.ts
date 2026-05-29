@@ -17,7 +17,21 @@ export async function POST(request: Request) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({
-        analysis: `📄 **File Analysis: ${fileName}**\n\n**Type:** ${fileType || "Unknown"}\n**Size:** ${(file.size / 1024).toFixed(1)} KB\n\nI've received your file. In full AI mode, I would analyze the contents in detail. For now, here's what I can tell you:\n- The file has been uploaded successfully\n- File name: ${fileName}\n- File type: ${fileType || "Unknown"}\n- File size: ${(file.size / 1024).toFixed(1)} KB\n\nPlease add your OpenAI API key to enable deep document analysis.`,
+        analysis: `I've received your file **${fileName}** (${fileType || "Unknown"}, ${(file.size / 1024).toFixed(1)} KB).
+
+[Show More →]
+
+**File Details:**
+- **Name:** ${fileName}
+- **Type:** ${fileType || "Unknown"}
+- **Size:** ${(file.size / 1024).toFixed(1)} KB
+
+To enable deep document analysis with vision, OCR, and content extraction, please add your \`OPENAI_API_KEY\` to \`.env.local\`.
+
+---
+
+**💡 Feedback**
+[📋 Copy] | [⬇️ Download] | [🔗 Share]`,
       });
     }
 

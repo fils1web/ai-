@@ -9,7 +9,28 @@ export async function POST(request: Request) {
 
     if (!apiKey) {
       return NextResponse.json({
-        content: "Hello! I'm Bizimana AI, your intelligent assistant. I'm currently running in demo mode. To enable full AI capabilities, please add your API key (OPENAI_API_KEY or ANTHROPIC_API_KEY) to your environment variables.\n\nI can still help you with:\n- General conversation and questions\n- File analysis and document intelligence\n- Structured summaries and research\n- Translation between languages\n- Project planning and strategy\n\nHow can I assist you today?"
+        content: `Hello! I'm **Bizimana AI**, your powerful intelligent assistant. I'm currently running in demo mode.
+
+[Show More →]
+
+To unlock my full capabilities — including advanced reasoning, coding, vision analysis, deep research, and document intelligence — please add your **OpenAI API key** or **Anthropic API key** to your environment variables (\`.env.local\`).
+
+**What I can still help you with:**
+- General conversation and Q&A
+- File analysis and document understanding
+- Structured summaries and research
+- Translation between 100+ languages
+- Project planning and strategy consulting
+
+**Getting Started:**
+1. Create a \`.env.local\` file in the project root
+2. Add \`OPENAI_API_KEY=your_key_here\` or \`ANTHROPIC_API_KEY=your_key_here\`
+3. Restart the dev server
+
+---
+
+**💡 Feedback**
+[📋 Copy] | [⬇️ Download] | [🔗 Share]`,
       });
     }
 
@@ -57,7 +78,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Chat API error:", error);
     return NextResponse.json(
-      { error: "Failed to generate response", content: "I apologize, but I encountered an error. Please try again." },
+      { error: "Failed to generate response" },
       { status: 500 }
     );
   }
