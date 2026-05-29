@@ -21,8 +21,47 @@ const KB: Record<string, string> = {
   git: "Git is a distributed version control system that tracks changes in source code. It enables collaboration, branching, and history tracking for software projects.",
   linux: "Linux is a free, open-source operating system kernel. It powers most servers, Android devices, and is the foundation of many development environments.",
   wassup: "'Wassup' is a casual greeting short for 'What's up?' — similar to 'How are you?' or 'What's going on?'. It's informal and commonly used in friendly conversation.",
-  wast: "'Wast' doesn't have a standard meaning. It could be a typo for 'waste' (waste) or 'what's that'. Could you clarify what you meant so I can give you a helpful answer?",
+  wast: "'Wast' doesn't have a standard meaning. It could be a typo for 'waste' or 'what's that'. Could you clarify?",
   watsup: "'Watsup' is another informal spelling of 'What's up?' — a casual greeting asking how someone is or what they're doing.",
+  bitcoin: "Bitcoin is a decentralized digital currency created in 2009 by an unknown person using the pseudonym Satoshi Nakamoto. It operates on a peer-to-peer network without a central authority.",
+  cryptocurrency: "Cryptocurrency is a digital or virtual currency secured by cryptography. Bitcoin, Ethereum, and others operate on blockchain technology, enabling secure peer-to-peer transactions.",
+  climate: "Climate change refers to long-term shifts in temperatures and weather patterns, primarily driven by human activities like burning fossil fuels, deforestation, and industrial processes.",
+  space: "Space exploration is the investigation of outer space using astronomy, spacecraft, and satellites. Key milestones include the Moon landing, the ISS, and ongoing Mars missions.",
+  mars: "Mars is the fourth planet from the Sun, often called the 'Red Planet' due to its reddish appearance. It has been a major focus of space exploration with rovers like Perseverance and Curiosity.",
+  moon: "The Moon is Earth's only natural satellite. It influences tides, has a surface marked by craters and maria, and was first visited by humans during the Apollo 11 mission in 1969.",
+  evolution: "Evolution is the process by which species change over generations through natural selection, genetic drift, and mutation. It was famously described by Charles Darwin in 'On the Origin of Species'.",
+  dna: "DNA (deoxyribonucleic acid) is the molecule that carries genetic instructions for all living organisms. It has a double-helix structure and stores biological information.",
+  photosynthesis: "Photosynthesis is the process by which plants convert sunlight, water, and carbon dioxide into glucose and oxygen. It's the foundation of most life on Earth.",
+  gravity: "Gravity is a natural force that attracts objects with mass toward each other. It governs planetary orbits, keeps us grounded, and was famously described by Isaac Newton and later refined by Einstein's general relativity.",
+  quantum: "Quantum mechanics is a branch of physics describing the behavior of matter and energy at atomic and subatomic scales. Key concepts include superposition, entanglement, and wave-particle duality.",
+  photography: "Photography is the art and practice of capturing images using light-sensitive surfaces or digital sensors. It encompasses portrait, landscape, street, macro, and many other genres.",
+  music: "Music is an art form that combines sound, rhythm, melody, and harmony. It spans countless genres from classical to jazz to hip-hop and is a universal human experience.",
+  guitar: "The guitar is a stringed instrument played by plucking or strumming. It comes in acoustic and electric varieties and is central to genres like rock, blues, folk, and flamenco.",
+  piano: "The piano is a keyboard instrument that produces sound by hammers striking strings. It's used across classical, jazz, pop, and contemporary music.",
+  cooking: "Cooking is the art and science of preparing food using heat. It involves techniques like roasting, frying, braising, and baking, and varies enormously across world cuisines.",
+  pizza: "Pizza is a beloved Italian dish consisting of a flat bread base topped with tomato sauce, cheese, and various toppings. It has become a global comfort food with countless regional variations.",
+  coffee: "Coffee is a brewed drink made from roasted coffee beans. Originating in Ethiopia, it's one of the world's most popular beverages with a rich culture around its preparation and enjoyment.",
+  tea: "Tea is an aromatic beverage made by steeping leaves of the Camellia sinensis plant in hot water. It has varieties like green, black, oolong, and white, and is central to many cultures.",
+  friendship: "Friendship is a close, mutual relationship between people built on trust, honesty, shared interests, and emotional support. It's one of the most important aspects of human wellbeing.",
+  happiness: "Happiness is a positive emotional state characterized by feelings of joy, contentment, and fulfillment. Studies show it's influenced by relationships, purpose, gratitude, and experiences more than material wealth.",
+  love: "Love is a complex set of emotions involving affection, attachment, and care. It takes many forms — romantic, familial, platonic, and self-love — and is a central theme in human experience.",
+  success: "Success means different things to different people. Generally, it involves achieving meaningful goals, fulfilling personal potential, and finding satisfaction in one's efforts and accomplishments.",
+  money: "Money is a medium of exchange for goods and services. It serves as a unit of account, a store of value, and a standard of deferred payment in economic systems.",
+  business: "Business involves the production, sale, or exchange of goods and services for profit. Key aspects include strategy, marketing, operations, finance, and customer relationships.",
+  startup: "A startup is a young company founded to develop a unique product or service and bring it to market. Startups focus on innovation, rapid growth, and often seek venture capital funding.",
+  marketing: "Marketing is the process of promoting and selling products or services. It includes market research, advertising, content creation, social media, and brand strategy.",
+  design: "Design is the process of planning and creating solutions that are functional, aesthetic, and user-centered. It spans graphic, UI/UX, industrial, interior, and architectural design.",
+  education: "Education is the process of acquiring knowledge, skills, values, and habits. It happens through formal schooling, self-study, experience, and social interaction throughout life.",
+  philosophy: "Philosophy is the study of fundamental questions about existence, knowledge, values, reason, mind, and language. Major branches include metaphysics, epistemology, ethics, and logic.",
+  psychology: "Psychology is the scientific study of the mind and behavior. It explores perception, cognition, emotion, personality, social interactions, and mental health.",
+  economics: "Economics is the study of how people allocate scarce resources. Microeconomics focuses on individuals and firms, while macroeconomics looks at entire economies, growth, and policy.",
+  politics: "Politics involves the processes by which groups make collective decisions. It encompasses governance, policy, power dynamics, and the organization of societies.",
+  history: "History is the study of past events, particularly in human affairs. It helps us understand how societies evolved, why events happened, and provides context for the present.",
+  worldwar: "World War II was a global conflict from 1939 to 1945 involving most of the world's nations. It remains the deadliest conflict in human history with over 70 million fatalities.",
+  internet: "The internet is a global network connecting millions of computers worldwide. It enables communication, information sharing, e-commerce, and countless digital services.",
+  socialmedia: "Social media refers to online platforms where users create and share content and participate in social networking. Major platforms include Facebook, Instagram, Twitter, TikTok, and LinkedIn.",
+  smartphone: "A smartphone is a mobile device that combines cellular communication with computing capabilities. It runs a mobile OS, supports apps, has a touchscreen, and includes cameras and sensors.",
+  cybersecurity: "Cybersecurity is the practice of protecting systems, networks, and data from digital attacks. It involves encryption, firewalls, authentication, monitoring, and incident response.",
 };
 
 function getKnowledge(query: string): string {
@@ -38,7 +77,7 @@ function extractKeyTerms(text: string): string[] {
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, "")
     .split(/\s+/)
-    .filter((w) => w.length > 3 && !["this", "that", "with", "from", "have", "been", "what", "when", "where", "which", "their", "there", "about", "would", "could", "should", "please", "tell", "help", "need", "want", "know", "like", "just", "also", "than", "then", "them", "some", "make", "does", "doing", "done", "made", "said", "very", "your"].includes(w));
+    .filter((w) => w.length > 3 && !["this", "that", "with", "from", "have", "been", "what", "when", "where", "which", "their", "there", "about", "would", "could", "should", "please", "tell", "help", "need", "want", "know", "like", "just", "also", "than", "then", "them", "some", "make", "does", "doing", "done", "made", "said", "very", "your", "think", "feel", "find", "take", "give", "use", "thing", "things", "much", "more", "many", "here"].includes(w));
   return [...new Set(words)].slice(0, 6);
 }
 
@@ -70,15 +109,15 @@ export function generateLocalResponse(
   if (isJoke(msg)) return jokeResponse();
   if (isCoding(msg)) return codingResponse(userMessage, msg, topic);
   if (isRwanda(msg)) return rwandaResponse(userMessage, msg, topic);
-  if (isTranslation(msg)) return translationResponse(userMessage);
-  if (isWriting(msg)) return writingResponse(userMessage, topic);
+  if (isPhilosophy(msg)) return philosophyResponse(userMessage, topic);
   if (isExplain(msg)) return explainResponse(userMessage, msg, topic);
+  if (isWriting(msg)) return writingResponse(userMessage, topic);
   if (isHowTo(msg)) return howToResponse(userMessage, topic);
   if (isCompare(msg)) return compareResponse(userMessage, topic);
   if (isWhy(msg)) return whyResponse(userMessage, topic);
+  if (isTranslation(msg)) return translationResponse(userMessage);
   if (isVision(msg)) return visionResponse();
   if (isImageGen(msg)) return imageGenResponse(userMessage, topic);
-  if (isPhilosophy(msg)) return philosophyResponse(userMessage, topic);
   if (isHealth(msg)) return healthResponse(userMessage, topic);
   if (isScience(msg)) return scienceResponse(userMessage, topic);
   if (isHistory(msg)) return historyResponse(userMessage, topic);
@@ -994,94 +1033,164 @@ Is there a specific aspect of Rwanda you'd like to learn more about?${FEEDBACK}`
 
 function generalResponse(original: string, msg: string, topic: string, isFollowUp: boolean): string {
   const knowledge = getKnowledge(msg);
-
   if (knowledge) {
-    return `Great question! ${knowledge}
+    const expansions = [
+      `Happy to share what I know about this — it's a fascinating topic with a lot of depth.`,
+      `That's a great topic. Let me give you the key points.`,
+      `Good question. Here's some useful information on that.`,
+    ];
+    const exp = expansions[Math.floor(Math.random() * expansions.length)];
+    return `${exp} ${knowledge}
 
 [Show More →]
 
-${capitalize(topic || "this topic")} is a really interesting subject with a lot of depth. The fundamentals give you a solid foundation, and there are plenty of practical applications in the real world. If you're curious about any specific angle — how it works, where it's used, or how to get started — just let me know and I'll dive deeper.${FEEDBACK}`;
+${knowledge}
+
+This is one of those topics that touches a lot of different areas. If you want to go deeper into any specific angle — history, how it works, practical applications, or current developments — just let me know and I'll dive in.${FEEDBACK}`;
   }
 
   const topics = topic.split(", ").filter(Boolean);
-  const mainTopic = topics[0] || "this";
+  const mainTopic = topics[0] || msg.split(/\s+/).slice(0, 3).join(" ") || "what you've mentioned";
   const secondTopic = topics[1] || null;
 
-  if (/\b(what|how|why|when|where|which|who)\b/.test(msg) || /\?$/.test(original.trim())) {
-    const question = original.length > 80 ? original.substring(0, 80) + "..." : original;
-    return `That's a great question. Let me break it down for you.
+  const isQuestion = /\b(what|how|why|when|where|which|who|do|does|did|can|could|would|should|is|are|was|were|have|has|had)\b/.test(msg) || /\?$/.test(original.trim());
+  const isOpinion = /\b(think|feel|believe|opinion|thoughts|what.*about|how.*about)\b/.test(msg);
+  const isAdvice = /\b(advice|suggest|recommend|should i|what should|how should|tip)\b/.test(msg);
+  const isDeep = /\b(meaning|purpose|why|deeper|explain|understand|really|actually|fundamental|essence)\b/.test(msg);
+  const isStatement = /^(i |i'm |i am |i've |i have |just |sometimes |people |the |it's |its )/.test(msg) || original.split(" ").length > 15;
 
-${question}
+  if (isOpinion) {
+    return `That's an interesting question — let me share my perspective on **${mainTopic}**.
 
 [Show More →]
 
-Alright, let me give you a thoughtful answer on **${mainTopic}**.
+I think **${mainTopic}** is one of those things where there's a lot to consider. Here's how I see it:
 
-Here's what I'd say: ${mainTopic} is a topic with a lot of interesting dimensions to explore, and the way you approach it really depends on what you're trying to understand or accomplish.
+From where I sit, the most important thing about ${mainTopic} is understanding the context — what works well in one situation might not be the best approach in another. The real value comes from thinking critically about your specific needs and what makes sense for your circumstances.
 
-**First, the big picture:**
-Think of ${mainTopic} as something that touches multiple areas — there isn't just one way to look at it. The most useful approach is to consider both the fundamentals and how they apply in practice.
+**A few things I'd keep in mind:**
+- The landscape around ${mainTopic} is always evolving, so staying curious is half the battle
+- There's rarely a single "right" answer — the best path depends on your goals, resources, and constraints
+- Often the most valuable insights come from combining different perspectives rather than committing to one approach
 
-**Here's what matters most:**
-- Understanding the core principles behind ${mainTopic} gives you a solid foundation
-- Seeing how it applies in real situations makes it practical
-- Knowing the common challenges and how to navigate them saves time
+**My honest take:**
+${mainTopic} is worth investing time in if it aligns with what you're trying to achieve. The key is to stay flexible, keep learning, and adjust your approach as you go.
 
-**A practical way to think about it:**
-${mainTopic} isn't just about theory — it's about what works in your specific context. The key is to start with what you know, build from there, and adjust as you go.
-
-${secondTopic ? `Regarding **${secondTopic}** — that adds another layer worth considering. The interplay between these aspects often determines the best approach.` : ""}
-
-If you give me a bit more context about what specifically you're curious about with ${mainTopic}, I can tailor this further and go as deep as you'd like.${FEEDBACK}`;
+What's your own perspective on this? I'd be curious to hear what you think.${FEEDBACK}`;
   }
 
-  if (isFollowUp) {
-    const followUpTopics = extractKeyTerms(original);
-    const ft = followUpTopics.length > 0 ? followUpTopics.join(", ") : mainTopic;
-    return `I'm glad you're digging deeper into **${ft}**. Let me expand on that.
+  if (isAdvice) {
+    return `Happy to help with some thoughts and suggestions on **${mainTopic}**.
 
 [Show More →]
 
-Building on what we've been talking about, here's more to consider about **${ft}**:
+Here's my advice approach when it comes to **${mainTopic}**:
 
-**To go deeper:**
-- One angle worth exploring is how ${ft} connects to broader concepts and ideas — understanding those connections often reveals insights you might not spot otherwise
-- Another practical angle: thinking about ${ft} in terms of real examples or use cases can make it click more than abstract explanation
-- And it's worth considering what the common misconceptions or pitfalls are — knowing those upfront saves a lot of time
+**Start with clarity.** Before diving in, get really clear on what you're trying to achieve. The single biggest mistake people make with ${mainTopic} is jumping into action without a clear goal in mind. Take a few minutes to define what success looks like for you.
 
-**Something I find interesting:**
-When people explore ${ft}, they often discover that the most valuable insights come from connecting it to what they already know. It's not about starting from scratch — it's about building bridges.
+**Do your research.** Spend some time understanding the landscape — what's worked for others, what common pitfalls exist, what resources are available. Knowledge upfront saves a lot of trial and error later.
 
-**Quick thought:**
-Would you like me to focus more on theory, practical application, or something in between? That way I can tailor the next part of our conversation to be most helpful for what you're working on.${FEEDBACK}`;
+**Start small and iterate.** You don't need to figure everything out at once. Pick one manageable aspect of ${mainTopic}, take action on it, learn from the experience, and adjust. Progress beats perfection every time.
+
+**A practical suggestion:**
+Set aside some dedicated time to explore ${mainTopic} without pressure. Curiosity and experimentation often lead to the best insights.
+
+**Bottom line:**
+${secondTopic ? `Since you also mentioned ${secondTopic}, I'd suggest thinking about how these connect. ` : ""}The best advice I can give is to trust the process — take it step by step, learn as you go, and don't be afraid to adjust course when you discover something new.
+
+Want me to go deeper on any specific aspect of ${mainTopic}?${FEEDBACK}`;
   }
 
-  const nouns = msg.split(/\s+/).filter(w => w.length > 2 && !["the", "and", "for", "are", "not", "but", "can", "all", "was", "got", "has", "had", "its", "how", "why", "you", "get", "out", "use", "two", "way", "say", "who", "any", "new", "now", "own", "may", "see"].includes(w));
-  const specific = nouns.length > 3 ? nouns.slice(0, 3).join(", ") : mainTopic;
-
-  return `I hear you on **${specific}**. Let me share some thoughts on that.
+  if (isDeep) {
+    return `That's a thoughtful question. Let me explore the deeper meaning of **${mainTopic}** with you.
 
 [Show More →]
 
-So here's my take on **${specific}**:
+**${mainTopic}** — when you really sit with it, there's more than meets the eye. Let me unpack that.
 
-It's one of those things where the devil's in the details — the core idea might be straightforward, but the real value comes from how you apply it. Let me break it down.
+**At its core:**
+${mainTopic} is really about understanding how things connect and why they matter. The surface-level answer is one thing, but the deeper truth is usually more nuanced and more interesting.
 
-**What I think matters most:**
+**What I find fascinating:**
+The more you explore ${mainTopic}, the more you realize it's connected to so many other things. It's rarely an isolated concept — it touches on other ideas, depends on certain conditions, and has ripple effects you might not expect at first glance.
 
-**1. Getting the fundamentals right.**
-Before diving into advanced stuff, make sure you have a solid handle on the basics of ${specific}. Everything else builds on that foundation.
+**A perspective worth considering:**
+Sometimes the most important questions about ${mainTopic} aren't about how it works, but about why it matters. What's the human element? What does it mean for the people involved? Those are often the questions that lead to the richest understanding.
 
-**2. Context is everything.**
-How ${specific} works in practice depends a lot on your specific situation — what tools you're using, what you're trying to achieve, what constraints you're working with. The same principles apply differently in different contexts.
+**I'd encourage you to:**
+- Question your assumptions about ${mainTopic}
+- Look at it from different angles — technical, human, philosophical
+- Think about what ${secondTopic || "related aspects"} bring to the picture
 
-**3. Learning by doing.**
-The best way to really understand ${specific} is to work with it directly. Theory gives you direction, but hands-on experience gives you real understanding.
+This is exactly the kind of question that rewards deep thinking. What specific dimension of ${mainTopic} are you most curious about?${FEEDBACK}`;
+  }
 
-**A perspective I find useful:**
-Don't try to learn everything about ${specific} all at once. Focus on what's most relevant to what you're doing right now, and let your understanding grow naturally as you go deeper.
+  if (isQuestion) {
+    const nounWords = msg.split(/\s+/).filter(w => w.length > 2 && !["the", "and", "for", "are", "not", "but", "can", "all", "was", "got", "has", "had", "its", "how", "why", "you", "get", "out", "use", "two", "way", "say", "who", "any", "new", "now", "own", "may", "see", "what", "does", "tell", "about", "know", "want", "need", "help", "just", "also", "much", "more", "some", "than"].includes(w));
+    const keyThing = nounWords.length > 0 ? nounWords.slice(0, 3).join(" ") : mainTopic;
+    return `That's a good question. Let me share what I know about **${keyThing}**.
 
-I'd love to hear more about what specifically you're working on or curious about with ${specific} — that way I can give you more targeted and useful information.${FEEDBACK}`;
+[Show More →]
+
+So about **${keyThing}** — here's my take.
+
+**The short version:**
+${keyThing} is an interesting area with a few key aspects worth understanding. It's not overly complicated once you break it down, but there are some important nuances.
+
+**Let me break it down:**
+
+First, it helps to know what we're really talking about. ${keyThing} involves a few core ideas that work together — once you see the pattern, it starts to make a lot more sense.
+
+Second, the practical side matters. How does ${keyThing} actually play out in real situations? That's where theory meets reality, and often where the most useful insights come from.
+
+Third, there are some common questions people have about ${keyThing} — things that seem confusing at first but become clear with a bit of explanation.
+
+**One thing worth noting:**
+${secondTopic ? `Since you're also asking about ${secondTopic}, there's an interesting connection here. ` : ""}Everyone comes to ${keyThing} with different background knowledge, so what's obvious to one person might be confusing to another. There's no shame in asking — that's how we learn.
+
+If you give me a bit more context about what specifically you're trying to understand about ${keyThing}, I can give you a much more targeted answer.${FEEDBACK}`;
+  }
+
+  if (isStatement) {
+    return `Thanks for sharing that. I hear you on **${mainTopic}** — let me respond to that.
+
+[Show More →]
+
+I appreciate you bringing that up. It sounds like **${mainTopic}** is something you've been thinking about, and I think that's worth exploring.
+
+**Here's my reaction:**
+What you're describing about ${mainTopic} is actually quite relatable. A lot of people find themselves in similar situations — trying to make sense of something, figure out the next step, or just understand it better.
+
+**A thought that comes to mind:**
+Sometimes when we talk about ${mainTopic}, we focus on the obvious aspects and overlook the subtler ones. The interesting stuff is often hiding just beneath the surface. ${secondTopic ? `The fact that you also mention ${secondTopic} suggests you're already thinking beyond the obvious, which is great.` : ""}
+
+**A couple of things to consider:**
+- How does ${mainTopic} fit into the bigger picture of what you're working on?
+- What would a good outcome look like for you?
+- Is there someone whose perspective on ${mainTopic} you'd find valuable?
+
+I'm here to help think this through with you. What aspect of ${mainTopic} would be most useful to explore together?${FEEDBACK}`;
+  }
+
+  const nouns = msg.split(/\s+/).filter(w => w.length > 2 && !["the", "and", "for", "are", "not", "but", "can", "all", "was", "got", "has", "had", "its", "how", "why", "you", "get", "out", "use", "two", "way", "say", "who", "any", "new", "now", "own", "may", "see", "think", "feel", "find", "take", "give", "thing", "things", "much", "more", "many", "here"].includes(w));
+  const specific = nouns.length > 2 ? nouns.slice(0, 3).join(", ") : mainTopic;
+
+  return `Interesting — let me think about that for a moment.
+
+[Show More →]
+
+So you're asking about **${specific}**. Here's what comes to mind.
+
+${mainTopic} is one of those topics where the more you explore it, the more you find. There's always another layer, another angle, another connection to something else.
+
+**What stands out to me:**
+The most interesting thing about ${specific} isn't always the most obvious thing. Often it's the connections — how ${specific} relates to other ideas, how it fits into a bigger picture, or how small changes in approach can lead to very different outcomes.
+
+**A way to think about it:**
+${specific} is less about finding the "right answer" and more about asking good questions. The quality of your thinking about ${specific} will improve as you ask better questions and consider different viewpoints.
+
+**Where to go from here:**
+If you want, we can explore ${specific} together. Tell me what aspect you're most curious about — practical application, theory, examples, history, or something else entirely — and I'll focus my response there.${FEEDBACK}`;
 }
 
 function detectLanguage(msg: string): string | null {
@@ -1141,6 +1250,6 @@ function extractTarget(original: string, msg: string): string {
     const match = original.match(pattern);
     if (match) return match[1].trim();
   }
-  const words = msg.split(/\s+/).filter((w) => w.length > 3 && !["what", "does", "this", "that", "with", "from", "tell", "about", "please", "like", "know", "want", "need", "help", "just", "very", "also", "could", "would", "should"].includes(w));
+  const words = msg.split(/\s+/).filter((w) => w.length > 3 && !["what", "does", "this", "that", "with", "from", "tell", "about", "please", "like", "know", "want", "need", "help", "just", "very", "also", "could", "would", "should", "think", "feel", "make", "take", "thing", "much", "more", "many"].includes(w));
   return words.slice(0, 3).join(" ") || "this topic";
 }
