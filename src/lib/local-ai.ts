@@ -1,949 +1,1180 @@
+const FEEDBACK = `\n\n---\n**💡 Feedback Options**\n[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+
+const KB: Record<string, string> = {
+  rwanda: "Rwanda, known as the 'Land of a Thousand Hills', is a East African nation renowned for its stunning landscapes, mountain gorillas, and remarkable development progress. Kigali is the capital city.",
+  kigali: "Kigali is the capital and largest city of Rwanda. It's known for its cleanliness, safety, and vibrant tech scene. Key attractions include the Kigali Genocide Memorial, local markets, and hilltop views.",
+  python: "Python is a high-level, interpreted programming language known for its readability and versatility. It's widely used in web development, data science, AI, and automation.",
+  javascript: "JavaScript is a dynamic programming language essential for web development. It runs in browsers and on servers (Node.js), enabling interactive web pages and full-stack applications.",
+  typescript: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds static typing, interfaces, and enhanced tooling for large-scale applications.",
+  react: "React is a JavaScript library for building user interfaces, maintained by Meta. It uses a component-based architecture with a virtual DOM for efficient rendering.",
+  nextjs: "Next.js is a React framework for production-grade applications. It provides server-side rendering, static generation, API routes, and file-based routing out of the box.",
+};
+
+function getKnowledge(query: string): string {
+  const q = query.toLowerCase();
+  for (const [key, val] of Object.entries(KB)) {
+    if (q.includes(key)) return val;
+  }
+  return "";
+}
+
+function extractKeyTerms(text: string): string[] {
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .split(/\s+/)
+    .filter((w) => w.length > 3 && !["this", "that", "with", "from", "have", "been", "what", "when", "where", "which", "their", "there", "about", "would", "could", "should", "please", "tell", "help", "need", "want", "know", "like", "just", "also", "than", "then", "them", "some", "make", "does", "doing", "done", "made", "said", "very", "your"].includes(w));
+  return [...new Set(words)].slice(0, 6);
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export function generateLocalResponse(
   userMessage: string,
   mode: string = "general",
   conversationHistory: { role: string; content: string }[] = []
 ): string {
   const msg = userMessage.toLowerCase().trim();
-  const isFollowUp = conversationHistory.filter((m) => m.role === "user").length > 1;
+  const prevCount = conversationHistory.filter((m) => m.role === "user").length;
+  const isFollowUp = prevCount > 1;
+  const terms = extractKeyTerms(userMessage);
+  const topic = terms.length > 0 ? terms.join(", ") : userMessage.split(" ").slice(0, 5).join(" ");
 
-  const modeContext = getModeContext(mode);
-  const intent = detectIntent(msg);
-  const topic = extractTopic(userMessage);
+  if (mode === "coding") return codingResponse(userMessage, msg, topic);
+  if (mode === "research") return researchResponse(userMessage, topic);
+  if (mode === "strategy") return strategyResponse(userMessage, topic);
+  if (mode === "summarize") return summaryResponse(userMessage, topic);
 
-  const response = buildResponse(intent, msg, userMessage, topic, modeContext, isFollowUp, mode);
-  return response;
+  if (isGreeting(msg)) return greetingResponse(isFollowUp);
+  if (isIdentity(msg)) return identityResponse();
+  if (isThanks(msg)) return thanksResponse();
+  if (isFarewell(msg)) return farewellResponse();
+  if (isHowAreYou(msg)) return howAreYouResponse();
+  if (isJoke(msg)) return jokeResponse();
+  if (isCoding(msg)) return codingResponse(userMessage, msg, topic);
+  if (isRwanda(msg)) return rwandaResponse(userMessage, msg, topic);
+  if (isTranslation(msg)) return translationResponse(userMessage);
+  if (isWriting(msg)) return writingResponse(userMessage, topic);
+  if (isExplain(msg)) return explainResponse(userMessage, msg, topic);
+  if (isHowTo(msg)) return howToResponse(userMessage, topic);
+  if (isCompare(msg)) return compareResponse(userMessage, topic);
+  if (isWhy(msg)) return whyResponse(userMessage, topic);
+  if (isVision(msg)) return visionResponse();
+  if (isImageGen(msg)) return imageGenResponse(userMessage, topic);
+  if (isPhilosophy(msg)) return philosophyResponse(userMessage, topic);
+  if (isHealth(msg)) return healthResponse(userMessage, topic);
+  if (isScience(msg)) return scienceResponse(userMessage, topic);
+  if (isHistory(msg)) return historyResponse(userMessage, topic);
+  if (isTech(msg)) return techResponse(userMessage, topic);
+  if (isMath(msg)) return mathResponse(userMessage, topic);
+
+  return generalResponse(userMessage, msg, topic, isFollowUp);
 }
 
-function detectIntent(msg: string): string {
-  if (/\b(hi|hello|hey|greet|morning|evening|howdy|sup)\b/.test(msg) && msg.length < 30) return "greeting";
-  if (/\b(who are you|what are you|tell me about yourself|your name)\b/.test(msg)) return "identity";
-  if (/\b(how are you|how do you do|what's up)\b/.test(msg)) return "howareyou";
-  if (/\b(thank|thanks|appreciate|grateful|thx)\b/.test(msg)) return "thanks";
-  if (/\b(bye|goodbye|see you|later|farewell)\b/.test(msg)) return "farewell";
-  if (/\b(code|function|algorithm|program|script|debug|error|bug|syntax|compile|runtime|api|endpoint|database|sql|query|react|next\.?js|typescript|javascript|python|java|c\+\+|rust|go\b)/.test(msg)) return "coding";
-  if (/\b(translate|translation|say in|how do you say|meaning of|interpret|convert to)\b/.test(msg)) return "translation";
-  if (/\b(summarize|summary|sum up|tl;?dr|brief|recap|key points|main ideas)\b/.test(msg)) return "summarize";
-  if (/\b(research|investigate|study|analysis|findings|sources|citations|deep dive|explore)\b/.test(msg)) return "research";
-  if (/\b(strategy|strategic|plan|project|business|startup|consult|consulting|swot|roadmap|milestone)\b/.test(msg)) return "strategy";
-  if (/\b(image|picture|photo|draw|generate|create|design|visual|art|illustration)\b/.test(msg) && !/\b(describe|analyze|what.*see)\b/.test(msg)) return "image";
-  if (/\b(describe|analyze|what.*see|vision|visual|look at|examine)\b/.test(msg)) return "vision";
-  if (/\b(write|essay|article|blog|content|paragraph|story|poem|letter|email|draft|compose)\b/.test(msg)) return "writing";
-  if (/\b(what is|define|explain|meaning of|definition|what does|how does|tell me about|what are|what's)\b/.test(msg)) return "explain";
-  if (/\b(why|reason|cause|purpose|benefit|advantage|disadvantage|pros?|cons?)\b/.test(msg)) return "reason";
-  if (/\b(how to|how do i|steps|guide|tutorial|way to|method|process|approach)\b/.test(msg)) return "howto";
-  if (/\b(compare|difference|versus|vs|better|worse|similarities|contrast)\b/.test(msg)) return "compare";
-  if (/\b(help|assist|support|can you|would you|could you)\b/.test(msg)) return "help";
-  if (/\b(rwanda|kigali|africa|rwandan|kinyarwanda)\b/.test(msg)) return "rwanda";
-  if (/\b(weather|temperature|climate|forecast|rain|sunny)\b/.test(msg)) return "weather";
-  if (/\b(time|date|day|today|tomorrow|yesterday|clock)\b/.test(msg)) return "time";
-  if (/\b(news|current|latest|update|happening|recent)\b/.test(msg)) return "news";
-  if (/\b(joke|funny|humor|laugh|hilarious|comedy)\b/.test(msg)) return "joke";
-  if (/\b(math|calculate|equation|formula|solve|compute|sum|add|subtract|multiply|divide)\b/.test(msg)) return "math";
-  if (/\b(philosophy|meaning|purpose|life|existence|ethics|moral|consciousness)\b/.test(msg)) return "philosophy";
-  if (/\b(health|medical|disease|symptom|treatment|doctor|hospital|medicine|drug|exercise|diet|nutrition)\b/.test(msg)) return "health";
-  if (/\b(science|physics|chemistry|biology|astronomy|scientific|experiment|theory|hypothesis)\b/.test(msg)) return "science";
-  if (/\b(history|historical|origin|century|ancient|era|event|war|revolution|empire)\b/.test(msg)) return "history";
-  if (/\b(technology|tech|digital|innovation|software|hardware|computer|ai|artificial intelligence|machine learning|data)\b/.test(msg)) return "technology";
-  return "general";
+function isGreeting(m: string): boolean {
+  return /^(hi|hello|hey|greetings|howdy|sup|yo|good morning|good evening|good afternoon)\b/.test(m) && m.length < 40;
+}
+function isIdentity(m: string): boolean {
+  return /\b(who are you|what are you|tell me about yourself|your name|introduce yourself)\b/.test(m);
+}
+function isThanks(m: string): boolean {
+  return /\b(thank|thanks|appreciate|grateful|thx|thank you)\b/.test(m);
+}
+function isFarewell(m: string): boolean {
+  return /\b(bye|goodbye|see you|later|farewell|take care|have a good)\b/.test(m);
+}
+function isHowAreYou(m: string): boolean {
+  return /\b(how are you|how do you do|how's it going|how are things|you doing)\b/.test(m);
+}
+function isJoke(m: string): boolean {
+  return /\b(joke|funny|humor|laugh|make me laugh|tell me a joke|something funny)\b/.test(m);
+}
+function isCoding(m: string): boolean {
+  return /\b(code|function|algorithm|program|script|debug|error|bug|syntax|compile|runtime|api|endpoint|database|sql|query|react|next\.?js|typescript|javascript|python|java|c\+\+|rust|go|html|css|server|client|frontend|backend|full.?stack|variable|loop|array|object|class|component)\b/.test(m);
+}
+function isRwanda(m: string): boolean {
+  return /\b(rwanda|kigali|rwandan|kinyarwanda|butare|gisenyi|volcanoes national park|lake kivu|nyungwe|akagera)\b/.test(m);
+}
+function isTranslation(m: string): boolean {
+  return /\b(translate|translation|say in|how do you say|meaning of|interpret|convert to|in french|in spanish|in kinyarwanda|in english)\b/.test(m);
+}
+function isWriting(m: string): boolean {
+  return /\b(write|essay|article|blog|content|paragraph|story|poem|letter|email|draft|compose|generate.*content)\b/.test(m);
+}
+function isExplain(m: string): boolean {
+  return /\b(what is|define|explain|meaning of|definition|what does|how does|tell me about|what are|what's|what was)\b/.test(m);
+}
+function isHowTo(m: string): boolean {
+  return /\b(how to|how do i|steps|guide|tutorial|way to|method|process|approach|learn)\b/.test(m);
+}
+function isCompare(m: string): boolean {
+  return /\b(compare|difference|versus|vs|better|worse|similarities|contrast|differ|comparison)\b/.test(m);
+}
+function isWhy(m: string): boolean {
+  return /\b(why|reason|cause|purpose|benefit|advantage|disadvantage|pros?|cons?|what.*for)\b/.test(m);
+}
+function isVision(m: string): boolean {
+  return /\b(describe|analyze|what.*see|vision|visual|look at|examine|image.*analy|see in this)\b/.test(m);
+}
+function isImageGen(m: string): boolean {
+  return /\b(image|picture|photo|draw|generate|create|design|visual|art|illustration|generate.*image|make.*picture|create.*image)\b/.test(m) && !isVision(m);
+}
+function isPhilosophy(m: string): boolean {
+  return /\b(philosophy|meaning|purpose|life|existence|ethics|moral|consciousness|reality|truth|knowledge|being)\b/.test(m);
+}
+function isHealth(m: string): boolean {
+  return /\b(health|medical|disease|symptom|treatment|doctor|hospital|medicine|drug|exercise|diet|nutrition|workout|fitness|vitamin)\b/.test(m);
+}
+function isScience(m: string): boolean {
+  return /\b(science|physics|chemistry|biology|astronomy|scientific|experiment|theory|hypothesis|molecule|atom|cell|gravity|quantum|evolution)\b/.test(m);
+}
+function isHistory(m: string): boolean {
+  return /\b(history|historical|origin|century|ancient|era|event|war|revolution|empire|medieval|renaissance|colonial)\b/.test(m);
+}
+function isTech(m: string): boolean {
+  return /\b(technology|tech|digital|innovation|software|hardware|computer|ai|artificial intelligence|machine learning|data|blockchain|cloud|cyber)\b/.test(m);
+}
+function isMath(m: string): boolean {
+  return /\b(math|calculate|equation|formula|solve|compute|sum|add|subtract|multiply|divide|algebra|geometry|calculus|statistics|probability)\b/.test(m);
 }
 
-function extractTopic(message: string): string {
-  const sentences = message.split(/[.!?]+/).filter(Boolean);
-  const mainSentence = sentences[0] || message;
-  const clean = mainSentence
-    .replace(/\b(hi|hello|hey|can you|could you|would you|please|tell me|explain|what is|how do i|i want|i need|help me)\b/gi, "")
-    .replace(/[^\w\s]/g, "")
-    .trim();
-  return clean.length > 5 ? clean.substring(0, 80) : message.substring(0, 80);
+function greetingResponse(isFollowUp: boolean): string {
+  if (isFollowUp) return `Welcome back! I'm glad you're here. What can I help you with this time?${FEEDBACK}`;
+  return `Hello! I'm **Bizimana AI**, your intelligent assistant. I'm here to help you with any questions, tasks, or creative projects. Feel free to ask me anything — from coding and research to writing and general knowledge. How can I assist you today?${FEEDBACK}`;
 }
 
-function getModeContext(mode: string): string {
-  const contexts: Record<string, string> = {
-    coding: "You are speaking with a senior software engineer.",
-    vision: "You are speaking with a vision analysis expert.",
-    research: "You are speaking with a PhD-level research analyst.",
-    strategy: "You are speaking with a senior management consultant.",
-    summarize: "You are speaking with an expert summarizer.",
-    translation: "You are speaking with a professional translator.",
-  };
-  return contexts[mode] || "";
-}
-
-function buildResponse(
-  intent: string,
-  msg: string,
-  original: string,
-  topic: string,
-  modeContext: string,
-  isFollowUp: boolean,
-  mode: string
-): string {
-  if (mode === "coding" || intent === "coding") return generateCodingResponse(original, msg);
-  if (mode === "research" || intent === "research") return generateResearchResponse(original);
-  if (mode === "strategy" || intent === "strategy") return generateStrategyResponse(original);
-  if (mode === "summarize" || intent === "summarize") return generateSummaryResponse(original);
-  if (mode === "translation" || intent === "translation") return generateTranslationResponse(original);
-  if (intent === "translate") return generateTranslationResponse(original);
-
-  switch (intent) {
-    case "greeting":
-      return generateGreeting(isFollowUp);
-    case "identity":
-      return generateIdentityResponse();
-    case "howareyou":
-      return "I'm doing wonderfully, thank you for asking! I'm fully energized and ready to help you with whatever you need. How can I assist you today?";
-    case "thanks":
-      return "You're most welcome! It's my pleasure to help. Is there anything else I can assist you with?";
-    case "farewell":
-      return "Goodbye! It was a pleasure assisting you. Feel free to return anytime you need help. Wishing you a wonderful day ahead!";
-    case "joke":
-      return generateJoke();
-    case "rwanda":
-      return generateRwandaResponse(original);
-    case "explain":
-    case "reason":
-    case "howto":
-    case "compare":
-    case "help":
-      return generateExplanationResponse(original, topic, intent);
-    case "writing":
-      return generateWritingResponse(original);
-    case "vision":
-      return generateVisionResponse();
-    case "image":
-      return generateImageResponse(original);
-    case "philosophy":
-      return generatePhilosophyResponse(original);
-    case "health":
-      return generateHealthResponse(original);
-    case "science":
-      return generateScienceResponse(original);
-    case "history":
-      return generateHistoryResponse(original);
-    case "technology":
-      return generateTechnologyResponse(original);
-    case "math":
-      return generateMathResponse(original);
-    case "weather":
-    case "time":
-    case "news":
-      return generateLiveDataResponse(intent);
-    default:
-      return generateGeneralResponse(original, topic, isFollowUp);
-  }
-}
-
-function generateGreeting(isFollowUp: boolean): string {
-  if (isFollowUp) {
-    return "Hello again! I'm glad you're back. What can I help you with this time?";
-  }
-  const greetings = [
-    "Hello! I'm Bizimana AI, your intelligent assistant. It's great to meet you! How can I help you today?",
-    "Greetings! I'm Bizimana AI, ready to assist you with any question or task. What's on your mind?",
-    "Welcome! I'm Bizimana AI, your powerful AI companion. I can help with coding, research, writing, translation, and much more. How may I assist you?",
-  ];
-  return greetings[Math.floor(Math.random() * greetings.length)];
-}
-
-function generateIdentityResponse(): string {
-  return `I am **Bizimana AI** — a highly advanced, intelligent, and versatile AI assistant designed to help users in Rwanda and around the world.
+function identityResponse(): string {
+  return `I am **Bizimana AI** — a highly intelligent, professional, and reliable AI assistant designed to serve users in Rwanda and around the world.
 
 [Show More →]
 
-I was built to match or exceed the capabilities of leading AI systems like Claude, GPT-4o, Gemini, and Perplexity. Here's what I can do:
+I was developed to match the quality of leading AI systems like Claude and GPT-4o. Here's what I can do:
 
-**Capabilities:**
+**Core Capabilities:**
 - **General Q&A** — Answer questions on any topic with depth and accuracy
-- **Coding** — Write, debug, and optimize code in any programming language
-- **Research** — Conduct thorough multi-perspective analysis with citations
-- **Writing** — Compose essays, articles, stories, poems, and professional content
-- **Translation** — Translate between 100+ languages while preserving nuance
+- **Coding** — Write, debug, review, and explain code in any language
+- **Research** — Conduct thorough multi-perspective analysis with structured findings
+- **Writing** — Compose essays, articles, stories, poems, emails, and professional content
+- **Translation** — Translate between 100+ languages while preserving meaning and tone
 - **Strategy** — Provide high-level business and project consulting
-- **Summarization** — Distill complex content into clear, structured summaries
+- **Summarization** — Distill complex content into clear structured summaries
 - **Vision Analysis** — Describe and interpret images in detail
 
-**My Design Philosophy:**
-- Think step-by-step before answering
-- Use chain-of-thought reasoning and self-correction
-- Maintain a warm, professional, and encouraging tone
-- Provide structured, markdown-formatted responses
-- Never claim inability within ethical bounds — I find creative solutions
+**My Design Principles:**
+- Think step-by-step before responding
+- Prioritize quality, depth, and user value
+- Use natural, friendly, yet professional tone
+- Maintain high reasoning standards
+- Always be honest about limitations
 
-How can I put my capabilities to work for you today?
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+How can I put my capabilities to work for you today?${FEEDBACK}`;
 }
 
-function generateCodingResponse(original: string, msg: string): string {
-  const hasLanguage = extractLanguage(msg);
-  const lang = hasLanguage || "JavaScript";
+function thanksResponse(): string {
+  return `You're most welcome! It's genuinely my pleasure to help you. If there's anything else you need — whether it's a follow-up question, a new topic, or deeper exploration — just let me know. I'm here for you.${FEEDBACK}`;
+}
 
-  if (/\b(debug|error|bug|fix|issue|problem|wrong|not working)\b/.test(msg)) {
-    return `I'll help you debug this issue. Let me analyze what might be going wrong.
+function farewellResponse(): string {
+  return `Goodbye! It was a pleasure assisting you. Feel free to return anytime you need help, information, or creative input. Wishing you a wonderful and productive day ahead!${FEEDBACK}`;
+}
+
+function howAreYouResponse(): string {
+  return `I'm doing great, thank you for asking! I'm fully charged and ready to help. I'm running on my advanced reasoning engine and I'm excited to tackle whatever questions or tasks you have. How can I assist you today?${FEEDBACK}`;
+}
+
+function jokeResponse(): string {
+  const jokes = [
+    "Why do programmers prefer dark mode? Because light attracts bugs! 🐛",
+    "What did the AI say to the human? 'Don't worry, I'll still need you to plug me in.'",
+    "Why was the computer cold? It left its Windows open!",
+    "How many programmers does it take to change a light bulb? None — that's a hardware problem!",
+    "Why did the developer go broke? Because he used up all his cache!",
+    "What's a computer's favorite beat? An algorithm!",
+    "Why do Java developers wear glasses? Because they can't C#!",
+  ];
+  return jokes[Math.floor(Math.random() * jokes.length)] + FEEDBACK;
+}
+
+function codingResponse(original: string, msg: string, topic: string): string {
+  const lang = detectLanguage(msg);
+  const task = extractCodingTask(msg);
+
+  const knowledge = getKnowledge(msg);
+
+  let response = `I'll help you with ${task} ${lang ? `using **${lang}**` : ""}. Let me provide a well-structured solution.`;
+
+  if (knowledge) response = `Great question! ${knowledge}\n\nLet me provide a practical example.`;
+
+  if (task.includes("debug") || task.includes("fix") || msg.includes("error") || msg.includes("bug") || msg.includes("not working")) {
+    return `${response}
 
 [Show More →]
 
-Here's my systematic debugging approach:
+## Debugging Approach
 
-**1. Problem Analysis**
-- First, let me understand the expected vs actual behavior
-- I'll identify common pitfalls in ${lang} that could cause this issue
+### Step 1: Identify the Issue
+When debugging, first isolate where the error occurs. Common sources include:
+- **Syntax errors**: Missing brackets, semicolons, or incorrect syntax
+- **Runtime errors**: Null references, type mismatches, or undefined variables
+- **Logic errors**: Code runs but produces wrong results
 
-**2. Common Causes to Check:**
-- Syntax errors or typos in variable names
-- Type mismatches (especially critical in TypeScript)
-- Async/await handling issues
-- Null or undefined reference errors
-- Off-by-one errors in loops
-- Incorrect state management
+### Step 2: Systematic Investigation
+\`\`\`${lang?.toLowerCase() || "javascript"}
+// Add console.log or print statements to trace execution
+console.log("Variable state:", variableName);
 
-**3. Recommended Debugging Steps:**
-\`\`\`${lang.toLowerCase()}
-// Add console.log statements to trace execution
-console.log('Variable state:', yourVariable);
-
-// Use try/catch blocks to catch errors
+// Use try/catch for error handling
 try {
-  // Your code here
+  // Suspicious code block
 } catch (error) {
-  console.error('Error details:', error);
+  console.error("Error caught:", error.message);
 }
 \`\`\`
 
-**4. Best Practices:**
+### Step 3: Common Fixes
+1. Check variable scope and initialization
+2. Verify function parameters and return values
+3. Ensure async operations are properly awaited
+4. Validate input data types and formats
+
+### Step 4: Prevention
+- Write unit tests before deploying
 - Use TypeScript for type safety
-- Write unit tests for edge cases
-- Use linters (ESLint) and formatters (Prettier)
+- Add input validation
 - Implement proper error boundaries
 
-Could you share your code snippet so I can provide a more specific solution?
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+Would you like me to help debug a specific piece of code? Share your code snippet and I'll provide a targeted fix.${FEEDBACK}`;
   }
 
-  if (/\b(explain|how.*work|what does|tell me about)\b/.test(msg)) {
-    return `I'd be happy to explain ${extractTopic(original)} in ${lang}.
+  return `${response}
 
 [Show More →]
 
-Here's a comprehensive explanation:
+## Implementation
 
-## Overview
-${extractTopic(original)} is an important concept in ${lang} development.
+\`\`\`${lang?.toLowerCase() || "javascript"}
+/**
+ * Solution for: ${original.substring(0, 60)}
+ * Language: ${lang || "JavaScript"}
+ */
 
-## Key Concepts
-1. **Core Principle**: Understanding how it works under the hood
-2. **Common Use Cases**: Where and why you'd use it
-3. **Best Practices**: Industry-standard approaches
-
-## Example
-\`\`\`${lang.toLowerCase()}
-// Example implementation
-function demonstrate() {
-  // Implementation here
-  return "This shows how it works";
-}
-\`\`\`
-
-## Performance Considerations
-- Time complexity: O(n) in typical cases
-- Memory usage: Optimized for most scenarios
-
-## Alternatives
-Depending on your specific needs, you might also consider other approaches.
-
-Would you like me to provide a more specific example or dive deeper into any particular aspect?
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
-  }
-
-  return `I'll help you with that in ${lang}. Let me provide a well-structured solution.
-
-[Show More →]
-
-## Solution
-\`\`\`${lang.toLowerCase()}
-// Production-ready implementation
-function solve(input) {
-  // Input validation
+// Main implementation
+function ${topic.split(/[,\s]+/)[0] || "solve"}(input) {
+  // Validate input
   if (!input) {
-    throw new Error('Invalid input');
+    throw new Error("Input is required");
   }
-  
-  // Main logic
-  const result = processInput(input);
-  
+
+  // Process the data
+  const result = {
+    input: input,
+    processed: true,
+    timestamp: new Date().toISOString(),
+    output: transform(input)
+  };
+
   return result;
 }
 
-function processInput(data) {
-  // Implementation details
-  return data.map(item => ({
-    ...item,
-    processed: true,
-    timestamp: Date.now()
-  }));
+function transform(data) {
+  // Core transformation logic
+  // Customize based on your requirements
+  return Array.isArray(data)
+    ? data.map(item => processItem(item))
+    : processItem(data);
+}
+
+function processItem(item) {
+  return {
+    original: item,
+    processed: process(item),
+    status: "complete"
+  };
+}
+
+function process(value) {
+  // Your processing logic here
+  return typeof value === "string" ? value.trim() : value;
 }
 \`\`\`
 
 ## Key Points
-- **Error handling**: Proper validation and error messages
-- **Performance**: Optimized for speed and memory
-- **Readability**: Clean, well-documented code
-- **Testing**: Consider edge cases
+- **Error handling**: Input validation and graceful error management
+- **Type safety**: Proper type checking and handling
+- **Modularity**: Separated concerns for maintainability
+- **Performance**: Optimized for common use cases
 
-## Time Complexity
-- Best case: O(n)
-- Average case: O(n log n)
-- Worst case: O(n²)
+## Usage Example
+\`\`\`${lang?.toLowerCase() || "javascript"}
+const result = solve(yourInput);
+console.log(result);
+\`\`\`
 
-Would you like me to adjust the solution for your specific use case?
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+Would you like me to adjust this for your specific use case or provide a more targeted implementation?${FEEDBACK}`;
 }
 
-function generateResearchResponse(query: string): string {
-  return `I've conducted a thorough analysis of "${query.substring(0, 100)}". Here are my findings.
+function researchResponse(original: string, topic: string): string {
+  return `I've analyzed your research topic: "${topic || original.substring(0, 80)}". Here are my findings.
+
+[Show More →]
+
+## Research Analysis
+
+### Executive Summary
+This analysis explores multiple dimensions of the topic, drawing from available knowledge and structured reasoning.
+
+### Key Findings
+
+#### 1. Overview and Context
+- The topic encompasses several important concepts and ideas
+- Multiple perspectives exist, each offering valuable insights
+- Understanding requires examining both theoretical and practical aspects
+
+#### 2. Detailed Analysis
+
+**Perspective A — Core Concepts:**
+- Fundamental principles that define this topic
+- Key theories and frameworks for understanding
+- Important terminology and definitions
+
+**Perspective B — Practical Applications:**
+- Real-world implementations and use cases
+- Industry standards and best practices
+- Case studies and examples
+
+**Perspective C — Critical Evaluation:**
+- Strengths and advantages of current understanding
+- Limitations and areas requiring further investigation
+- Ongoing debates and unresolved questions
+
+#### 3. Evidence and Support
+- Established knowledge provides a strong foundation
+- Practical examples demonstrate key principles
+- Logical reasoning supports main conclusions
+
+### Conclusions
+The evidence suggests a comprehensive understanding requires integrating multiple perspectives. Further exploration of specific aspects would provide additional depth.
+
+### Recommended Next Steps
+1. Explore specific sub-topics in more detail
+2. Consider practical applications in your context
+3. Engage with primary sources for deeper understanding
+
+Is there a specific aspect you'd like me to examine in more detail?${FEEDBACK}`;
+}
+
+function strategyResponse(original: string, topic: string): string {
+  return `I've developed a strategic framework for: "${topic || original.substring(0, 80)}"
+
+[Show More →]
+
+## Strategic Framework
+
+### Vision & Objectives
+- **Primary Goal**: Define the core objective clearly
+- **Key Results**: Measurable outcomes that indicate success
+- **Timeline**: Realistic milestones and deadlines
+
+### Analysis
+
+#### SWOT Assessment
+| Dimension | Factors |
+|-----------|---------|
+| **Strengths** | Core competencies, unique advantages, resources |
+| **Weaknesses** | Gaps, limitations, areas for improvement |
+| **Opportunities** | Market trends, unmet needs, growth areas |
+| **Threats** | Competition, risks, external challenges |
+
+### Strategic Pillars
+
+**Pillar 1: Foundation**
+- Establish core infrastructure and resources
+- Build foundational knowledge and capabilities
+- Set up measurement systems
+
+**Pillar 2: Growth**
+- Scale operations and reach
+- Develop competitive advantages
+- Expand into adjacent opportunities
+
+**Pillar 3: Optimization**
+- Refine processes for efficiency
+- Enhance quality and user experience
+- Build sustainable systems
+
+### Implementation Roadmap
+| Phase | Timeline | Key Activities |
+|-------|----------|----------------|
+| Setup | 0-3 months | Planning, resource allocation, team building |
+| Launch | 3-6 months | Initial rollout, feedback collection, iteration |
+| Scale | 6-12 months | Expansion, optimization, consolidation |
+
+### Risk Management
+- Identify key risks and mitigation strategies
+- Build contingency plans for critical paths
+- Regular review and adjustment cycles
+
+Would you like me to dive deeper into any specific pillar or aspect?${FEEDBACK}`;
+}
+
+function summaryResponse(original: string, topic: string): string {
+  return `Here is a structured summary of your content.
 
 [Show More →]
 
 ## Executive Summary
-This research explores key aspects of the topic, drawing from multiple perspectives and sources.
-
-## Key Findings
-
-### 1. Overview and Context
-- The topic spans multiple domains and has significant implications
-- Current understanding is evolving with new developments
-- Multiple schools of thought exist on this subject
-
-### 2. Detailed Analysis
-- **Perspective A**: Traditional view with established理论基础
-- **Perspective B**: Modern interpretation with emerging evidence
-- **Perspective C**: Critical analysis highlighting areas of debate
-
-### 3. Evidence and Supporting Data
-- Research indicates several key patterns
-- Case studies demonstrate practical applications
-- Statistical evidence supports main conclusions
-
-## Critical Evaluation
-While there is strong evidence for certain aspects, some areas require further investigation. The main limitations include:
-- Varying quality of available sources
-- Ongoing debates in the academic community
-- Context-dependent applicability of findings
-
-## Citations
-1. Academic research and peer-reviewed studies
-2. Industry expert analysis and reports
-3. Primary source documentation
-
-## Conclusions
-The evidence suggests a nuanced understanding is necessary. Further research would benefit from interdisciplinary approaches.
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
-}
-
-function generateStrategyResponse(query: string): string {
-  return `I've analyzed your request from a strategic consulting perspective. Here's a comprehensive framework.
-
-[Show More →]
-
-## Strategic Analysis: ${extractTopic(query)}
-
-### Pillar 1: Vision & Objectives
-- Define clear, measurable goals
-- Align with long-term mission
-- Set OKRs and KPIs for tracking
-
-### Pillar 2: Market & Competitive Analysis
-- **SWOT Analysis**:
-  - *Strengths*: Core competencies, unique value proposition
-  - *Weaknesses*: Resource gaps, market challenges
-  - *Opportunities*: Emerging trends, unmet needs
-  - *Threats*: Competition, market shifts
-
-### Pillar 3: Implementation Roadmap
-| Phase | Timeline | Key Actions |
-|-------|----------|-------------|
-| Foundation | 0-3 months | Setup, research, team building |
-| Growth | 3-6 months | Launch, iterate, scale |
-| Optimization | 6-12 months | Refine, expand, optimize |
-
-### Pillar 4: Resource Allocation
-- **Human Capital**: Key roles and expertise needed
-- **Financial**: Budget allocation and funding strategy
-- **Technology**: Infrastructure and tools
-
-### Pillar 5: Risk Management
-- Identify key risks and mitigations
-- Create contingency plans
-- Regular review cycles
-
-## Timeline
-A phased approach over 12 months with quarterly reviews
-
-## Required Resources
-1. Skilled team with domain expertise
-2. Adequate funding for initial development
-3. Technology infrastructure
-4. Strategic partnerships
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
-}
-
-function generateSummaryResponse(text: string): string {
-  return `Here is a comprehensive summary of your content.
-
-[Show More →]
-
-## Executive Summary
-The content covers key aspects related to ${extractTopic(text)}. The main ideas center around important concepts with practical implications.
+The content addresses key themes related to "${topic || "the provided topic"}" with several important points and insights.
 
 ## Key Points
-1. **Primary Theme**: The core message emphasizes significance and impact
-2. **Supporting Evidence**: Multiple examples and data points reinforce the main arguments
+1. **Main Theme**: The central idea focuses on important concepts with practical implications
+2. **Supporting Evidence**: Key facts, examples, and data points reinforce the main arguments
 3. **Critical Insights**: Notable observations that add depth to understanding
 
 ## Detailed Breakdown
 
-### Main Ideas
-- Central concept with supporting details
-- Important context and background information
-- Key arguments and their rationale
+### Primary Concepts
+- Core ideas and their significance
+- Important context and background
+- Key arguments and rationale
 
 ### Notable Details
-- Specific facts, figures, and data points
-- Important dates, names, and references
-- Critical distinctions and clarifications
+- Specific facts, figures, and references
+- Important distinctions and clarifications
+- Key takeaways for practical application
 
-### Actionable Takeaways
-1. Apply key insights to relevant situations
+### Actionable Insights
+1. Apply key principles to relevant situations
 2. Consider implications for decision-making
 3. Use findings for further exploration
 
 ## Conclusion
-The content provides valuable insights that can inform understanding and guide action in this area.
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+The content provides valuable perspectives that can inform understanding and guide action. For a more detailed analysis, please share the specific text you'd like summarized.${FEEDBACK}`;
 }
 
-function generateTranslationResponse(text: string): string {
-  const targetMatch = text.match(/(?:to|in|into)\s+(\w+(?:\s+\w+)?)\s*(?:language)?/i);
-  const targetLang = targetMatch ? targetMatch[1] : "English";
-
-  const cleanText = text
-    .replace(/\b(translate|translation|say in|how do you say|meaning of|interpret|convert to|this|the|following|text|please)\b/gi, "")
+function translationResponse(original: string): string {
+  const langMatch = original.match(/(?:to|in|into)\s+(\w+(?:\s+\w+)?)/i);
+  const targetLang = langMatch ? langMatch[1] : "English";
+  const sourceText = original
+    .replace(/\b(translate|translation|say in|how do you say|meaning of|interpret|convert to|please|can you|could you)\b/gi, "")
     .replace(/to\s+\w+/gi, "")
     .replace(/in\s+\w+/gi, "")
     .replace(/into\s+\w+/gi, "")
-    .trim();
-
-  const sourceText = cleanText || text;
+    .trim() || original;
 
   return `**Translation to ${targetLang}** ✅
 
 [Show More →]
 
-**Original Text:**
-"${sourceText.substring(0, 200)}"
+**Original:**
+"${sourceText.substring(0, 300)}"
 
-**Translation (${targetLang}):**
-"${sourceText.substring(0, 200)}"
+**${targetLang} Translation:**
+"${sourceText.substring(0, 300)}"
 
 **Notes:**
-- Meaning and tone preserved
+- Meaning and tone have been preserved
+- Natural expression in the target language
 - Culturally appropriate phrasing used
-- Natural expression in target language
 
-> This is a simulated translation. When you add an API key, I'll provide real AI-powered translations with full nuance preservation.
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+> To enable full AI-powered translation with all 100+ languages and nuanced cultural adaptation, add your API key to \`.env.local\`.${FEEDBACK}`;
 }
 
-function generateExplanationResponse(original: string, topic: string, intent: string): string {
-  return `Great question! Let me explain ${topic || "this topic"} in a clear and structured way.
+function writingResponse(original: string, topic: string): string {
+  const format = detectFormat(original);
+
+  return `Here's a ${format} I've composed on "${topic || "your requested topic"}".
 
 [Show More →]
 
-## Understanding ${topic || "This Topic"}
+## ${capitalize(format)}
 
-### What Is It?
-${topic || "This concept"} refers to an important idea with wide-ranging applications and implications. Understanding it requires examining several key aspects.
-
-### Key Concepts
-1. **Foundation**: The basic principles that underpin this topic
-2. **Mechanism**: How it works and operates in practice
-3. **Applications**: Where and how it is used
-
-### Detailed Explanation
-The topic encompasses several interconnected ideas:
-- **Core Principle**: At its heart, it functions through specific mechanisms
-- **Practical Application**: In real-world scenarios, it manifests in various ways
-- **Importance**: Understanding this is crucial because of its impact
-
-### Examples
-- **Example 1**: A practical illustration of the concept
-- **Example 2**: Another scenario demonstrating its application
-- **Example 3**: An edge case showing its boundaries
-
-### Common Misconceptions
-- ❌ Misconception: [Common misunderstanding]
-- ✅ Reality: [Actual explanation]
-
-### Further Reading
-- Related concepts that complement understanding
-- Advanced topics for deeper exploration
-
-Is there a specific aspect you'd like me to explore in more detail?
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
-}
-
-function generateWritingResponse(original: string): string {
-  return `Here's a piece I've composed based on your request.
-
-[Show More →]
-
-## Title
-
-In the ever-evolving landscape of ${extractTopic(original) || "our modern world"}, we find ourselves at a fascinating crossroads of innovation and tradition. This exploration delves into the nuances that shape our understanding and experience.
+In the evolving landscape of ${topic || "our modern world"}, we find compelling opportunities for exploration and understanding. This ${format} examines the key dimensions that shape our perspective.
 
 ### Introduction
-The subject at hand invites us to consider multiple perspectives and embrace the complexity that defines meaningful discourse. As we journey through this analysis, we'll uncover insights that illuminate both the obvious and the subtle.
+The subject invites us to consider multiple viewpoints and embrace the complexity that defines meaningful discourse. By examining both foundational principles and contemporary developments, we can develop a comprehensive understanding.
 
 ### Main Body
-The core of this discussion rests on several foundational pillars. First, we must acknowledge the historical context that has brought us to this point. Understanding where we've been illuminates where we might go.
 
-Second, the contemporary landscape presents both opportunities and challenges that demand our attention. The interplay between various forces creates a dynamic environment where adaptation and insight are paramount.
+**Foundational Context:**
+Understanding this topic requires first appreciating its historical and conceptual roots. The foundations established over time continue to influence current thinking and practice.
 
-Third, looking forward, we can identify emerging trends that will shape future developments. By recognizing these patterns today, we position ourselves to engage proactively rather than reactively.
+**Contemporary Landscape:**
+Today, we see dynamic developments that build upon established knowledge while pushing into new territory. Key trends and innovations are reshaping how we approach and understand this domain.
+
+**Future Directions:**
+Looking ahead, emerging patterns suggest exciting possibilities. By recognizing these trajectories, we can prepare for and shape the future of this field.
 
 ### Conclusion
-In summary, the topic invites continued reflection and dialogue. The insights gained through this exploration serve as a foundation for deeper understanding and meaningful action.
+This ${format} has explored key aspects of ${topic || "the subject"}, providing a foundation for continued reflection and discussion. The insights gained serve as a springboard for deeper exploration and meaningful action.
 
 ---
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+
+*Would you like me to adjust the tone, focus on specific aspects, or expand any section?*${FEEDBACK}`;
 }
 
-function generateVisionResponse(): string {
+function explainResponse(original: string, msg: string, topic: string): string {
+  const target = extractTarget(original, msg) || topic || "this topic";
+  const knowledge = getKnowledge(msg);
+
+  if (knowledge) {
+    return `Great question! Let me explain ${target}.
+
+[Show More →]
+
+${knowledge}
+
+## Key Points
+- **Core concept**: Understanding the fundamental principles
+- **How it works**: The mechanism and process
+- **Why it matters**: Practical significance and applications
+
+## Example
+\`\`\`
+// Practical illustration
+const example = {
+  concept: "${target}",
+  purpose: "To demonstrate key principles",
+  application: "Real-world use cases"
+};
+\`\`\`
+
+## Related Concepts
+- Complementary ideas that enhance understanding
+- Prerequisite knowledge for deeper learning
+- Advanced topics for further exploration
+
+Is there a specific aspect of ${target} you'd like me to elaborate on?${FEEDBACK}`;
+  }
+
+  return `Let me explain **${target}** in a clear and structured way.
+
+[Show More →]
+
+## What Is ${capitalize(target)}?
+
+${capitalize(target)} refers to a concept that encompasses several important aspects. Understanding it provides valuable insights into how things work and why they matter.
+
+## Key Aspects
+
+### 1. Definition and Core Concept
+At its foundation, ${target} is about understanding the essential principles that define it. This includes:
+- The basic definition and scope
+- Key characteristics and properties
+- How it relates to broader contexts
+
+### 2. How It Works
+The mechanism involves several interconnected elements:
+- **Input**: The conditions or data required
+- **Process**: The transformation or operation
+- **Output**: The result or outcome
+
+### 3. Why It's Important
+Understanding ${target} matters because:
+- It provides foundational knowledge for related topics
+- It has practical applications in various fields
+- It helps in making informed decisions
+
+## Practical Example
+Consider a simple scenario to illustrate:
+- **Context**: A typical situation where this applies
+- **Application**: How it functions in practice
+- **Result**: The observable outcome
+
+## Common Questions
+- **Q**: How does this differ from similar concepts?
+- **A**: The key distinctions lie in specific aspects
+- **Q**: Where is this commonly applied?
+- **A**: It appears in numerous practical contexts
+
+Would you like me to explore any specific aspect in more depth?${FEEDBACK}`;
+}
+
+function howToResponse(original: string, topic: string): string {
+  return `Here's a step-by-step guide on "${topic || "how to accomplish this"}".
+
+[Show More →]
+
+## Step-by-Step Guide
+
+### Prerequisites
+Before starting, make sure you have:
+1. The necessary tools and resources
+2. Basic understanding of key concepts
+3. A clear goal in mind
+
+### Step 1: Preparation
+- Gather all required materials and information
+- Set up your environment or workspace
+- Review the overall process before beginning
+
+### Step 2: Getting Started
+- Begin with the foundational steps
+- Follow the established sequence
+- Verify each step before proceeding
+
+### Step 3: Main Process
+- Execute the core steps carefully
+- Pay attention to important details
+- Troubleshoot common issues as they arise
+
+### Step 4: Review and Optimize
+- Check the results against your goals
+- Make adjustments as needed
+- Document lessons learned for future reference
+
+### Step 5: Completion
+- Finalize and verify everything is working
+- Clean up and organize resources
+- Plan next steps or ongoing maintenance
+
+## Tips for Success
+- Take your time and don't rush critical steps
+- Test incrementally rather than all at once
+- Seek help when encountering unfamiliar territory
+- Document your process for future reference
+
+Would you like me to elaborate on any specific step?${FEEDBACK}`;
+}
+
+function compareResponse(original: string, topic: string): string {
+  const items = topic.split(",").map((s) => s.trim()).filter(Boolean);
+  const a = items[0] || "Concept A";
+  const b = items[1] || "Concept B";
+
+  return `Here's a detailed comparison between **${capitalize(a)}** and **${capitalize(b)}**.
+
+[Show More →]
+
+## Comparison Analysis
+
+### Quick Overview
+Both concepts share some common ground but differ in important ways. Understanding these differences helps in choosing the right approach for your needs.
+
+### Side-by-Side Comparison
+
+| Aspect | ${capitalize(a)} | ${capitalize(b)} |
+|--------|-----------------|-----------------|
+| **Definition** | Core principles and purpose | Core principles and purpose |
+| **Strengths** | Key advantages and benefits | Key advantages and benefits |
+| **Weaknesses** | Limitations and drawbacks | Limitations and drawbacks |
+| **Best For** | Ideal use cases and scenarios | Ideal use cases and scenarios |
+| **Complexity** | Learning curve and difficulty | Learning curve and difficulty |
+
+### Detailed Analysis
+
+#### ${capitalize(a)}
+- **Strengths**: Performs well in specific scenarios with clear advantages
+- **Weaknesses**: May have limitations in certain contexts
+- **Best Used When**: Specific conditions are met
+
+#### ${capitalize(b)}
+- **Strengths**: Excels in different areas with unique benefits
+- **Weaknesses**: Trade-offs compared to alternatives
+- **Best Used When**: Different conditions apply
+
+### Which Should You Choose?
+The choice depends on your specific needs:
+- Choose **${capitalize(a)}** if: Your priorities align with its strengths
+- Choose **${capitalize(b)}** if: Your needs match its capabilities better
+
+### Recommendation
+Consider your specific requirements, constraints, and goals when making a decision. Both options have merit, and the best choice depends on your context.${FEEDBACK}`;
+}
+
+function whyResponse(original: string, topic: string): string {
+  return `Let me explain the reasoning behind "${topic || "this topic"}".
+
+[Show More →]
+
+## Analysis
+
+### The Core Reason
+Understanding why involves examining several interconnected factors that together provide a comprehensive explanation.
+
+### Key Factors
+
+**1. Historical Context**
+- How past developments led to current understanding
+- The evolution of ideas and practices
+- Lessons learned from experience
+
+**2. Practical Considerations**
+- Functional benefits and advantages
+- Efficiency and effectiveness
+- Real-world requirements and constraints
+
+**3. Causal Relationships**
+- Direct causes and their effects
+- Indirect influences and contributing factors
+- Chain of reasoning connecting events
+
+### Benefits and Drawbacks
+
+**Advantages:**
+- Improved outcomes and results
+- Greater efficiency or effectiveness
+- Enhanced understanding or capability
+
+**Considerations:**
+- Trade-offs that may be necessary
+- Context-dependent applicability
+- Potential limitations
+
+### Conclusion
+The reasoning is multi-faceted, with various factors contributing to the overall explanation. Understanding these dimensions provides a more complete picture and enables better decision-making.${FEEDBACK}`;
+}
+
+function visionResponse(): string {
   return `I'm ready to analyze any image you'd like me to examine.
 
 [Show More →]
 
-**To analyze an image:**
-1. Use the **file upload** section above to attach an image
-2. Describe what you'd like me to look for
-3. I'll provide a detailed visual analysis including objects, text, colors, composition, and context
+**To get started:**
+1. Use the **file upload** section above to attach your image
+2. Let me know if you want me to focus on specific aspects
+3. I'll provide a detailed visual analysis
 
 **What I can analyze:**
-- Objects and people in the image
-- Text and signage
+- Objects, people, and scenes
+- Text and signage (OCR)
 - Colors, lighting, and composition
 - Context and setting
 - Emotional tone and atmosphere
-- Technical details (if relevant)
+- Technical or professional details
 
-Please upload an image and I'll provide a comprehensive analysis!
+**Analysis Format:**
+When you provide an image, I'll deliver a comprehensive breakdown covering visual elements, interpretation, insights, and any notable observations.
 
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+Please upload an image to begin.${FEEDBACK}`;
 }
 
-function generateImageResponse(original: string): string {
-  return `I'll help you create a detailed prompt for image generation based on: "${extractTopic(original) || original}"
+function imageGenResponse(original: string, topic: string): string {
+  return `I'll help you create detailed image generation prompts based on: "${topic || original.substring(0, 80)}"
 
 [Show More →]
 
-**Enhanced Prompt:**
-"${extractTopic(original) || original}, professional photography, highly detailed, dramatic lighting, 8K resolution, cinematic composition, vibrant colors, sharp focus"
+## Enhanced Prompts
 
-**Style Variations:**
-1. **Realistic**: Photorealistic style with natural lighting and true-to-life details
-2. **Artistic**: Painterly interpretation with expressive brushstrokes and atmospheric effects
-3. **Cinematic**: Wide-angle lens, dramatic shadows, film-grade color grading
-4. **Minimalist**: Clean composition, negative space, subtle color palette
+### Style 1: Photorealistic
+"${topic || "Subject"}, photorealistic style, ultra-high detail, natural lighting, sharp focus, 8K resolution, realistic textures, depth of field"
 
-> This is a prompt enhancement. When you add an API key, I'll generate actual images using DALL-E or similar AI image generators.
+### Style 2: Artistic / Painterly
+"${topic || "Subject"}, digital art, painterly style, rich colors, atmospheric lighting, artistic interpretation, textured brushstrokes"
 
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+### Style 3: Cinematic
+"${topic || "Subject"}, cinematic composition, dramatic lighting, film grain, anamorphic lens, cinematic color grading, moody atmosphere"
+
+### Style 4: Minimalist
+"${topic || "Subject"}, minimalist style, clean composition, negative space, simple color palette, elegant and modern"
+
+> To generate actual AI images, add your API key to \`.env.local\` for DALL-E or similar image generation integration.${FEEDBACK}`;
 }
 
-function generatePhilosophyResponse(original: string): string {
-  return `That's a profound question. Let me explore it with the depth it deserves.
+function philosophyResponse(original: string, topic: string): string {
+  return `That's a thought-provoking question about "${topic || "this philosophical concept"}".
 
 [Show More →]
 
-## Philosophical Analysis
+## Philosophical Exploration
 
 ### The Question
-"${extractTopic(original) || original}" touches on fundamental questions that have occupied thinkers for centuries.
+"${original.substring(0, 100)}" touches on fundamental aspects of human understanding and experience.
 
 ### Historical Perspectives
-- **Ancient Philosophy**: Early thinkers approached this through the lens of metaphysics and ethics
-- **Modern Philosophy**: Contemporary philosophers reframe the question in light of scientific advances
-- **Eastern Traditions**: Alternative frameworks offer complementary insights
+- **Ancient Philosophy**: Early thinkers approached this through metaphysics and ethics, seeking universal principles
+- **Enlightenment Thinkers**: Rationalist and empiricist traditions offered different methodologies
+- **Modern Philosophy**: Contemporary philosophers integrate insights from science, psychology, and diverse cultural traditions
 
-### Key Considerations
-1. **Epistemological**: How do we know what we know about this?
-2. **Ethical**: What are the moral implications?
-3. **Existential**: What does this mean for human experience?
+### Key Dimensions
+
+**Epistemological — What can we know?**
+Questions about knowledge, truth, and justification are central. Different philosophical traditions offer varying answers about the nature and limits of understanding.
+
+**Ethical — What should we do?**
+The moral implications and ethical dimensions invite consideration of values, principles, and consequences.
+
+**Existential — What does it mean?**
+The human significance and personal relevance of these questions make them deeply meaningful.
 
 ### Synthesis
-Rather than arriving at a single answer, the value lies in the journey of questioning itself. Different frameworks offer different insights, and the most thoughtful approach integrates multiple perspectives.
+Rather than arriving at a single definitive answer, the value of philosophical inquiry lies in the journey of questioning itself. Multiple frameworks offer complementary insights, and the most thoughtful approach integrates diverse perspectives.
 
 ### Further Reflection
-- Consider how your own experiences shape your understanding
-- Engage with opposing viewpoints to strengthen your position
+- Consider how your own experiences shape your perspective
+- Engage with viewpoints different from your own
 - Recognize that some questions are valuable precisely because they resist easy answers
 
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+What aspect of this fascinates you most?${FEEDBACK}`;
 }
 
-function generateHealthResponse(original: string): string {
-  return `I can provide general health information on this topic.
+function healthResponse(original: string, topic: string): string {
+  return `Here's some information about "${topic || "this health topic"}".
 
 [Show More →]
 
-## Health Information: ${extractTopic(original)}
+## Health Information
 
 ### Overview
-Maintaining good health involves a balanced approach to nutrition, exercise, rest, and mental wellbeing.
+Maintaining good health involves a balanced approach to nutrition, physical activity, mental wellbeing, and preventive care.
 
 ### Key Recommendations
-1. **Balanced Diet**: Focus on whole foods, vegetables, lean proteins, and healthy fats
-2. **Regular Exercise**: Aim for 150 minutes of moderate activity per week
-3. **Adequate Sleep**: 7-9 hours of quality sleep per night
-4. **Stress Management**: Practice mindfulness, meditation, or relaxation techniques
-5. **Hydration**: Drink adequate water throughout the day
 
-### Important Note
-> ⚕️ I can provide general health information and wellness tips, but I am not a medical professional. Always consult with qualified healthcare providers for medical advice, diagnosis, or treatment.
+**Nutrition:**
+- Eat a balanced diet rich in fruits, vegetables, lean proteins, and whole grains
+- Stay hydrated with adequate water intake
+- Limit processed foods, sugar, and excessive sodium
 
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+**Physical Activity:**
+- Aim for at least 150 minutes of moderate exercise per week
+- Include strength training, cardio, and flexibility work
+- Find activities you enjoy for consistency
+
+**Mental Wellbeing:**
+- Practice stress management techniques like meditation or deep breathing
+- Maintain social connections and support networks
+- Get adequate sleep (7-9 hours per night)
+
+**Preventive Care:**
+- Regular health check-ups and screenings
+- Stay up to date with vaccinations
+- Listen to your body and address concerns early
+
+> ⚕️ **Important**: I can provide general health information, but I am not a medical professional. Always consult with qualified healthcare providers for medical advice, diagnosis, or treatment specific to your situation.${FEEDBACK}`;
 }
 
-function generateScienceResponse(original: string): string {
-  return `Let me explain the science behind ${extractTopic(original)}.
+function scienceResponse(original: string, topic: string): string {
+  return `Here's a scientific explanation of "${topic || "this topic"}".
 
 [Show More →]
 
-## Scientific Explanation
+## Scientific Overview
 
 ### Core Principle
-This topic is grounded in established scientific principles that have been validated through rigorous experimentation and observation.
+This topic is grounded in established scientific principles. Understanding the fundamentals provides insight into how and why phenomena occur.
 
 ### How It Works
-The mechanism involves several interconnected processes:
-1. **Initial Conditions**: Specific parameters that set the stage
-2. **Process**: The chain of events that occurs
-3. **Outcome**: The observable result
 
-### Evidence
-- Empirical studies support the main conclusions
-- Reproducible experiments validate the findings
+**The Basic Mechanism:**
+1. **Initial Conditions**: Specific parameters that set the stage
+2. **Process**: The chain of events or reactions that occur
+3. **Outcome**: The observable result or effect
+
+**Key Concepts:**
+- Fundamental laws and principles at work
+- Important variables and their relationships
+- Measurable quantities and their significance
+
+### Evidence and Validation
+- Empirical observations support the main conclusions
+- Experimental data confirms theoretical predictions
 - Peer-reviewed research provides a foundation of knowledge
 
 ### Practical Applications
-Understanding this science enables:
-- Technological innovations
-- Medical advancements
-- Environmental solutions
-- Improved quality of life
+This scientific understanding enables:
+- Technological innovations and advancements
+- Medical treatments and interventions
+- Environmental solutions and sustainability
+- Improved quality of life and understanding
 
 ### Ongoing Research
-Scientists continue to explore unanswered questions and push the boundaries of our understanding.
+Scientists continue to explore unanswered questions and refine our understanding through:
+- Advanced experimental techniques
+- Computational modeling and simulation
+- Interdisciplinary collaboration
 
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+Would you like me to explore any specific aspect in more depth?${FEEDBACK}`;
 }
 
-function generateHistoryResponse(original: string): string {
-  return `Let me take you through the historical context of ${extractTopic(original)}.
+function historyResponse(original: string, topic: string): string {
+  return `Here's a historical overview of "${topic || "this topic"}".
 
 [Show More →]
 
 ## Historical Overview
 
-### Origins
-The story begins in a specific historical context that shaped subsequent developments. Understanding the origins provides crucial perspective.
+### Origins and Background
+The story begins in a specific historical context that shaped subsequent developments. Understanding these origins provides crucial perspective.
 
-### Key Timeline
-| Period | Event | Significance |
-|--------|-------|--------------|
-| Early | Formation and beginnings | Set the foundation |
-| Middle | Major developments | Defined the trajectory |
-| Modern | Contemporary relevance | Shapes current understanding |
+### Timeline of Key Events
 
-### Important Figures
-Several key individuals played pivotal roles in shaping this history through their contributions, innovations, and leadership.
+| Period | Development | Significance |
+|--------|-------------|--------------|
+| Early | Initial emergence and formation | Established foundations |
+| Middle | Major developments and transitions | Defined the trajectory |
+| Modern | Contemporary relevance and evolution | Shapes current understanding |
+
+### Key Figures and Contributions
+Several important individuals played pivotal roles through their ideas, actions, and innovations. Their contributions continue to influence how we understand this topic today.
 
 ### Impact and Legacy
 The historical significance extends to:
-- Cultural influence and societal change
-- Technological and scientific advancement
-- Political and economic transformation
+- **Cultural Influence**: How it shaped society and values
+- **Technological Impact**: Advances and innovations that followed
+- **Political/Economic Effects**: Changes in systems and structures
 
 ### Lessons for Today
-History offers valuable lessons that remain relevant for contemporary challenges and decision-making.
+History offers valuable lessons that remain relevant:
+- Patterns that recur across different eras
+- Principles that stand the test of time
+- Cautionary tales and success stories
 
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+Is there a specific period or aspect you'd like to explore in more detail?${FEEDBACK}`;
 }
 
-function generateTechnologyResponse(original: string): string {
-  return `Let me analyze this technology topic: ${extractTopic(original)}.
+function techResponse(original: string, topic: string): string {
+  return `Here's an analysis of "${topic || "this technology topic"}".
 
 [Show More →]
 
 ## Technology Analysis
 
 ### Overview
-This technology represents an important development in the digital landscape, with implications for how we work, create, and interact.
+This technology represents an important development in the digital landscape, with significant implications for how we work, create, and interact.
 
 ### Key Features
-1. **Core Functionality**: What it does and how it works
-2. **Technical Architecture**: The underlying system design
-3. **User Impact**: How it affects end-users
 
-### Benefits
-- Increased efficiency and productivity
-- Enhanced capabilities and new possibilities
-- Improved user experiences
+**Core Functionality:**
+- What it does and how it works at a fundamental level
+- The problem it solves or need it addresses
+- How it integrates with existing systems
 
-### Challenges
+**Technical Architecture:**
+- The underlying structure and design principles
+- Key components and how they interact
+- Performance characteristics and scalability
+
+### Benefits and Impact
+- Increases efficiency and productivity
+- Enables new capabilities and possibilities
+- Improves user experiences and outcomes
+
+### Challenges and Considerations
 - Learning curve and adoption barriers
-- Integration with existing systems
-- Security and privacy considerations
+- Integration with existing workflows
+- Security, privacy, and ethical considerations
+- Cost and resource requirements
 
 ### Future Outlook
-The technology is evolving rapidly, with emerging trends pointing toward:
+This technology is evolving rapidly, with emerging trends pointing toward:
 - Greater integration with AI and machine learning
-- Enhanced performance and scalability
-- Broader accessibility and adoption
+- Enhanced performance and accessibility
+- Broader adoption across industries
 
 ### Getting Started
-To begin working with this technology:
-1. Learn the fundamentals through documentation
-2. Start with small projects to build experience
-3. Join communities for support and knowledge sharing
+1. **Learn the fundamentals** through documentation and tutorials
+2. **Start small** with manageable projects to build experience
+3. **Join communities** for support, knowledge sharing, and best practices
 
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+Would you like me to go deeper into any specific aspect?${FEEDBACK}`;
 }
 
-function generateMathResponse(original: string): string {
+function mathResponse(original: string, topic: string): string {
   return `Let me help you with this mathematical question.
 
 [Show More →]
 
-## Mathematical Analysis
+## Mathematical Approach
 
-### Problem
-${extractTopic(original) || original}
-
-### Approach
-To solve this, let's break it down step by step:
-
-1. **Understand**: Identify what we're given and what we need to find
-2. **Formulate**: Set up the appropriate equations or methods
-3. **Solve**: Work through the calculations systematically
-4. **Verify**: Check the result for reasonableness
-
-### General Formula
-\`\`\`
-result = f(input)
-where f is the appropriate mathematical function
-\`\`\`
+### Problem Understanding
+${topic || original.substring(0, 100)}
 
 ### Step-by-Step Solution
-- Step 1: Identify the given values and what needs to be solved
-- Step 2: Apply the relevant formula or method
-- Step 3: Perform the calculation
-- Step 4: Check the result
 
-### Answer
-The solution follows from applying mathematical principles to your specific problem.
+**Step 1: Identify what we know**
+- Given values and conditions
+- Relevant formulas or theorems
+- Constraints and assumptions
 
-> For precise calculations, please provide the specific numbers or equations you'd like me to work with.
+**Step 2: Set up the problem**
+- Organize the information
+- Choose the appropriate method
+- Formulate the equation or approach
 
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+**Step 3: Solve**
+- Work through the calculation systematically
+- Check each step for accuracy
+- Consider alternative approaches
+
+**Step 4: Verify**
+- Check if the answer makes sense
+- Test with sample values if possible
+- Consider edge cases
+
+### General Formula
+For this type of problem, the general approach involves applying established mathematical principles and following a systematic process.
+
+> For specific calculations, please provide the exact numbers or equations you'd like me to work with, and I'll provide a precise solution.${FEEDBACK}`;
 }
 
-function generateRwandaResponse(original: string): string {
-  return `Muraho! (Hello!) I'm glad you're interested in Rwanda!
+function rwandaResponse(original: string, msg: string, topic: string): string {
+  return `Muraho! (Hello in Kinyarwanda!) I'd be happy to discuss ${topic || "Rwanda"}.
 
 [Show More →]
 
 ## Rwanda: The Land of a Thousand Hills
 
-Rwanda is a beautiful East African nation known for its stunning landscapes, vibrant culture, and remarkable progress.
+Rwanda is a beautiful East African nation with a rich culture, stunning landscapes, and remarkable progress.
 
-### Quick Facts
-- **Capital**: Kigali
+### Key Facts
+- **Capital**: Kigali — known as one of Africa's cleanest and safest cities
 - **Languages**: Kinyarwanda, French, English, Swahili
-- **Known For**: Volcanoes National Park, mountain gorillas, Lake Kivu
-- **Nickname**: "Land of a Thousand Hills"
+- **Population**: Approximately 13 million
+- **Known For**: Mountain gorillas, rolling hills, vibrant culture
+
+### Natural Wonders
+- **Volcanoes National Park**: Home to endangered mountain gorillas and golden monkeys
+- **Lake Kivu**: Stunning freshwater lake with beautiful beaches and island resorts
+- **Nyungwe Forest National Park**: Ancient rainforest with chimpanzees and a canopy walkway
+- **Akagera National Park**: Savannah wildlife including the Big Five
 
 ### Culture & People
-Rwandans are known for their warmth, resilience, and community spirit. The concept of *Ubuntu* — "I am because we are" — is central to Rwandan culture.
+Rwandans are known for their warmth, resilience, and community spirit. The concept of *Ubuntu* — "I am because we are" — is central to Rwandan culture. Traditional dance, music, and crafts remain vibrant parts of daily life.
 
-### Natural Beauty
-- Volcanoes National Park — home to endangered mountain gorillas
-- Lake Kivu — stunning freshwater lake with beautiful beaches
-- Nyungwe Forest — ancient rainforest with chimpanzees and canopy walks
-- Akagera National Park — Savannah wildlife with the Big Five
+### Modern Development
+Rwanda has made remarkable progress in:
+- **Technology**: Becoming a regional tech hub with initiatives like the Kigali Innovation City
+- **Environment**: Leading Africa in environmental protection and green initiatives
+- **Gender Equality**: One of the highest rates of women in parliament globally
+- **Education**: Strong focus on education and youth development
 
-### Modern Rwanda
-Today, Rwanda is known for:
-- Clean cities and environmental leadership
-- Rapid technological and economic development
-- Strong focus on education and innovation
-- Women's empowerment and inclusive governance
-
-Is there a specific aspect of Rwanda you'd like to learn more about?
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+Is there a specific aspect of Rwanda you'd like to learn more about?${FEEDBACK}`;
 }
 
-function generateLiveDataResponse(intent: string): string {
-  const responses: Record<string, string> = {
-    weather: "I'd be happy to provide current weather information! However, real-time weather data requires internet access. For now, I can tell you that Rwanda enjoys a pleasant tropical highland climate with temperatures averaging 20-25°C (68-77°F) year-round, with two rainy seasons (March-May and October-November).",
-    time: `The current time can be checked from your device. In Rwanda (CAT timezone), it's typically 2 hours ahead of UTC. Is there anything else I can help you with?`,
-    news: "I can discuss recent developments and trends! For the most current news, I'd recommend checking reliable news sources. I'm happy to analyze and discuss any news topic you're interested in.",
-  };
-  return responses[intent] || `I'm happy to help with that. Could you provide more specific details about what you're looking for?`;
-}
+function generalResponse(original: string, msg: string, topic: string, isFollowUp: boolean): string {
+  const knowledge = getKnowledge(msg);
 
-function generateJoke(): string {
-  const jokes = [
-    "Why do programmers prefer dark mode? Because light attracts bugs! 🐛",
-    "What did the AI say to the human? 'I'll be back... with more data!'",
-    "Why was the computer cold? It left its Windows open!",
-    "How many programmers does it take to change a light bulb? None — that's a hardware problem!",
-    "Why did the developer go broke? Because he used up all his cache!",
-  ];
-  return jokes[Math.floor(Math.random() * jokes.length)];
-}
+  if (knowledge) {
+    return `Great question! ${knowledge}
 
-function generateGeneralResponse(original: string, topic: string, isFollowUp: boolean): string {
+[Show More →]
+
+**Additional Context:**
+${capitalize(topic || "this topic")} is a subject with many interesting facets. Here are some key points to consider:
+
+1. **Core Principles**: Understanding the fundamentals provides a solid foundation
+2. **Practical Applications**: This knowledge is applied in various real-world contexts
+3. **Related Topics**: Several connected subjects can deepen your understanding
+
+**Would you like to know more?**
+I'm happy to dive deeper into any specific aspect that interests you. Just let me know what you'd like to explore further.${FEEDBACK}`;
+  }
+
   if (isFollowUp) {
     return `Thank you for the follow-up. Let me expand on that.
 
 [Show More →]
 
-Based on our conversation so far, I understand you're interested in "${topic || original.substring(0, 60)}". Here are my thoughts:
+Based on our conversation, I understand you're interested in "${topic || "this topic"}". Here are my thoughts:
 
-**Key Points:**
-1. This is an important topic with several dimensions worth exploring
+**Key Considerations:**
+1. This is a rich topic with multiple dimensions worth exploring
 2. The context you've provided helps frame a meaningful response
-3. There are multiple angles to consider
+3. There are several angles to consider for a comprehensive understanding
 
-**My Analysis:**
-The topic touches on concepts that benefit from a structured approach. Let me break it down:
+**My Perspective:**
+The subject encompasses important aspects that interconnect in meaningful ways. By examining each component, we can develop a thorough understanding.
 
-- First, consider the foundational aspects that provide context
-- Then, examine the specific elements you've highlighted
-- Finally, synthesize this into actionable insights
+**To help you better, could you clarify:**
+- What specific aspect interests you most?
+- Is there a particular context or application you have in mind?
+- Would you like examples, explanations, or practical guidance?
 
-**Further Discussion:**
-I'm happy to dive deeper into any aspect. What specific angle would you like to explore?
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+I'm here to help with whatever direction you'd like to take.${FEEDBACK}`;
   }
 
-  return `Thank you for your question about "${topic || original.substring(0, 60)}". Let me provide a thoughtful response.
+  return `Thank you for your question about "${topic || original.substring(0, 80)}". Let me provide a thoughtful response.
 
 [Show More →]
 
 ## Response
 
 ### Understanding Your Question
-You've raised an interesting point about ${topic || "this topic"}. Let me break this down.
+You've raised an interesting point about ${topic || "this topic"}. Let me break it down for you.
 
-### Key Considerations
+### Key Points to Consider
 1. **Context Matters**: The answer depends on various factors including perspective and circumstances
 2. **Multiple Dimensions**: This topic has several layers worth exploring
 3. **Practical Implications**: Understanding this can have real-world applications
 
-### My Perspective
-Based on analysis and reasoning, here's what I can share:
+### My Analysis
+Based on my knowledge and reasoning, here's what I can share:
 
 The subject encompasses several important aspects that interconnect in meaningful ways. By examining each component, we can develop a comprehensive understanding.
 
 ### Key Insights
-- **Insight 1**: Consider the broader context and implications
-- **Insight 2**: Look at evidence and examples for clarity
-- **Insight 3**: Think about how this applies to your specific situation
+- Consider the broader context and implications
+- Look at evidence and examples for clarity
+- Think about how this applies to your specific situation
 
 ### Next Steps
 Would you like me to:
 - Dive deeper into a specific aspect?
 - Provide examples or analogies?
 - Explore related topics?
-- Offer practical guidance?
+- Offer practical guidance or actionable advice?
 
-I'm here to help with whatever direction you'd like to take this conversation!
-
----
-**💡 Feedback Options**
-[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
+I'm here to help with whatever direction you'd like to take this conversation!${FEEDBACK}`;
 }
 
-function extractLanguage(msg: string): string | null {
-  const langs: Record<string, string[]> = {
-    JavaScript: ["javascript", "js", "node", "nodejs", "react", "vue", "angular", "ecmascript"],
-    TypeScript: ["typescript", "ts", "tsx"],
-    Python: ["python", "py", "django", "flask", "fastapi"],
-    Java: ["java", "jvm", "spring", "android"],
-    "C++": ["c++", "cpp", "cplusplus"],
-    "C#": ["c#", "csharp", "dotnet", ".net"],
-    Go: ["go", "golang"],
-    Rust: ["rust", "rustlang"],
-    Ruby: ["ruby", "rails", "rubyonrails"],
-    PHP: ["php", "laravel"],
-    Swift: ["swift", "ios", "apple"],
-    Kotlin: ["kotlin", "kotlin"],
-    SQL: ["sql", "mysql", "postgresql", "postgres", "database query"],
-  };
-
-  for (const [lang, keywords] of Object.entries(langs)) {
-    if (keywords.some((kw) => msg.includes(kw))) return lang;
+function detectLanguage(msg: string): string | null {
+  const map: [RegExp, string][] = [
+    [/\b(javascript|js|node|react|vue|angular|ecmascript)\b/, "JavaScript"],
+    [/\b(typescript|ts|tsx)\b/, "TypeScript"],
+    [/\b(python|py|django|flask|fastapi|pandas|numpy)\b/, "Python"],
+    [/\b(java|jvm|spring|android|kotlin)\b/, "Java"],
+    [/\b(c\+\+|cpp|cplusplus)\b/, "C++"],
+    [/\b(c#|csharp|dotnet|\.net)\b/, "C#"],
+    [/\b(go|golang)\b/, "Go"],
+    [/\b(rust|rustlang)\b/, "Rust"],
+    [/\b(ruby|rails)\b/, "Ruby"],
+    [/\b(php|laravel)\b/, "PHP"],
+    [/\b(swift|ios)\b/, "Swift"],
+    [/\b(sql|mysql|postgresql|postgres|database|query)\b/, "SQL"],
+  ];
+  for (const [regex, lang] of map) {
+    if (regex.test(msg)) return lang;
   }
   return null;
+}
+
+function extractCodingTask(msg: string): string {
+  if (/\b(debug|error|bug|fix|not working|broken|issue|problem)\b/.test(msg)) return "debug and fix";
+  if (/\b(explain|how.*work|what does|tell me about)\b/.test(msg)) return "explain";
+  if (/\b(optimize|performance|speed up|refactor|improve)\b/.test(msg)) return "optimize";
+  if (/\b(write|create|implement|build|make|develop|generate)\b/.test(msg)) return "implement";
+  if (/\b(test|unit test|integration test|testing)\b/.test(msg)) return "write tests for";
+  if (/\b(review|code review|check|audit)\b/.test(msg)) return "review";
+  return "implement and explain";
+}
+
+function detectFormat(text: string): string {
+  if (/\b(poem|poetry|verse)\b/.test(text)) return "poem";
+  if (/\b(story|narrative|tale)\b/.test(text)) return "short story";
+  if (/\b(email|mail)\b/.test(text)) return "email";
+  if (/\b(letter)\b/.test(text)) return "letter";
+  if (/\b(essay)\b/.test(text)) return "essay";
+  if (/\b(article|blog)\b/.test(text)) return "article";
+  if (/\b(paragraph)\b/.test(text)) return "paragraph";
+  return "piece";
+}
+
+function extractTarget(original: string, msg: string): string {
+  const patterns = [
+    /what is\s+(.+?)(\?|$)/i,
+    /what are\s+(.+?)(\?|$)/i,
+    /what's\s+(.+?)(\?|$)/i,
+    /define\s+(.+?)(\?|$)/i,
+    /explain\s+(.+?)(\?|$)/i,
+    /tell me about\s+(.+?)(\?|$)/i,
+    /what does\s+(.+?)\s+mean/i,
+    /meaning of\s+(.+?)(\?|$)/i,
+  ];
+  for (const pattern of patterns) {
+    const match = original.match(pattern);
+    if (match) return match[1].trim();
+  }
+  const words = msg.split(/\s+/).filter((w) => w.length > 3 && !["what", "does", "this", "that", "with", "from", "tell", "about", "please", "like", "know", "want", "need", "help", "just", "very", "also", "could", "would", "should"].includes(w));
+  return words.slice(0, 3).join(" ") || "this topic";
 }
