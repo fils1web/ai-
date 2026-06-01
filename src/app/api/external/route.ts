@@ -59,6 +59,7 @@ export async function GET(request: Request) {
         max_conversation_turns: 50,
         rate_limit: "60 requests per minute",
       },
+      contact: "fils4rever@gmail.com",
     });
   }
 

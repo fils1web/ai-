@@ -29,7 +29,8 @@ interface AppContextType {
   setAppName: (v: string) => void;
 }
 
-const PASSCODE = "#BmbCoDev#12@@";
+const AUTH_EMAIL = "fils4rever@gmail.com";
+const AUTH_PASSWORD = "*#Fils*#12@@";
 const AUTH_KEY = "bizimana_auth";
 const LOGO_KEY = "bizimana_logo";
 const NAME_KEY = "bizimana_name";
@@ -153,4 +154,4 @@ export function useApp() {
   return ctx;
 }
 
-export { PASSCODE };
+export { AUTH_EMAIL, AUTH_PASSWORD };
