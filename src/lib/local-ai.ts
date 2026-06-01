@@ -1,5 +1,18 @@
 const FEEDBACK = `\n\n---\n**💡 Feedback Options**\n[📋 Copy Response] | [⬇️ Download as .md] | [🔗 Share]`;
 
+type Engine = "perplexity" | "claude" | "chatgpt" | "gemini";
+
+function selectEngine(msg: string, mode: string): Engine {
+  if (mode === "research") return "perplexity";
+  if (mode === "strategy" || mode === "summarize") return "claude";
+  if (mode === "coding") return "chatgpt";
+  if (/\b(research|fact|source|cite|reference|study|paper|evidence|data|analysis)\b/.test(msg)) return "perplexity";
+  if (/\b(think|reason|explain|why|meaning|philosophy|deep|complex|analyze|understand|nuance)\b/.test(msg)) return "claude";
+  if (/\b(code|function|write|implement|build|create|debug|fix|app|program|script)\b/.test(msg)) return "chatgpt";
+  if (/\b(what is|quick|summary|overview|simple|fast|short|define|tell me)\b/.test(msg)) return "gemini";
+  return "chatgpt";
+}
+
 const KB: Record<string, string> = {
   rwanda: "Rwanda, known as the 'Land of a Thousand Hills', is a East African nation renowned for its stunning landscapes, mountain gorillas, and remarkable development progress. Kigali is the capital city.",
   kigali: "Kigali is the capital and largest city of Rwanda. It's known for its cleanliness, safety, and vibrant tech scene. Key attractions include the Kigali Genocide Memorial, local markets, and hilltop views.",
@@ -95,36 +108,39 @@ export function generateLocalResponse(
   const isFollowUp = prevCount > 1;
   const terms = extractKeyTerms(userMessage);
   const topic = terms.length > 0 ? terms.join(", ") : userMessage.split(" ").slice(0, 5).join(" ");
+  const engine = selectEngine(msg, mode);
 
-  if (mode === "coding") return codingResponse(userMessage, msg, topic);
-  if (mode === "research") return researchResponse(userMessage, topic);
-  if (mode === "strategy") return strategyResponse(userMessage, topic);
-  if (mode === "summarize") return summaryResponse(userMessage, topic);
+  let response: string;
 
-  if (isGreeting(msg)) return greetingResponse(isFollowUp);
-  if (isIdentity(msg)) return identityResponse();
-  if (isThanks(msg)) return thanksResponse();
-  if (isFarewell(msg)) return farewellResponse();
-  if (isHowAreYou(msg)) return howAreYouResponse();
-  if (isJoke(msg)) return jokeResponse();
-  if (isCoding(msg)) return codingResponse(userMessage, msg, topic);
-  if (isRwanda(msg)) return rwandaResponse(userMessage, msg, topic);
-  if (isPhilosophy(msg)) return philosophyResponse(userMessage, topic);
-  if (isExplain(msg)) return explainResponse(userMessage, msg, topic);
-  if (isWriting(msg)) return writingResponse(userMessage, topic);
-  if (isHowTo(msg)) return howToResponse(userMessage, topic);
-  if (isCompare(msg)) return compareResponse(userMessage, topic);
-  if (isWhy(msg)) return whyResponse(userMessage, topic);
-  if (isTranslation(msg)) return translationResponse(userMessage);
-  if (isVision(msg)) return visionResponse();
-  if (isImageGen(msg)) return imageGenResponse(userMessage, topic);
-  if (isHealth(msg)) return healthResponse(userMessage, topic);
-  if (isScience(msg)) return scienceResponse(userMessage, topic);
-  if (isHistory(msg)) return historyResponse(userMessage, topic);
-  if (isTech(msg)) return techResponse(userMessage, topic);
-  if (isMath(msg)) return mathResponse(userMessage, topic);
+  if (mode === "research") { response = researchResponse(userMessage, topic, engine); }
+  else if (mode === "strategy") { response = strategyResponse(userMessage, topic); }
+  else if (mode === "summarize") { response = summaryResponse(userMessage, topic); }
+  else if (mode === "coding") { response = codingResponse(userMessage, msg, topic, engine); }
+  else if (isGreeting(msg)) { response = greetingResponse(isFollowUp); }
+  else if (isIdentity(msg)) { response = identityResponse(); }
+  else if (isThanks(msg)) { response = thanksResponse(); }
+  else if (isFarewell(msg)) { response = farewellResponse(); }
+  else if (isHowAreYou(msg)) { response = howAreYouResponse(); }
+  else if (isJoke(msg)) { response = jokeResponse(); }
+  else if (isCoding(msg)) { response = codingResponse(userMessage, msg, topic, engine); }
+  else if (isRwanda(msg)) { response = rwandaResponse(userMessage, msg, topic); }
+  else if (isPhilosophy(msg)) { response = philosophyResponse(userMessage, topic); }
+  else if (isExplain(msg)) { response = explainResponse(userMessage, msg, topic); }
+  else if (isWriting(msg)) { response = writingResponse(userMessage, topic); }
+  else if (isHowTo(msg)) { response = howToResponse(userMessage, topic); }
+  else if (isCompare(msg)) { response = compareResponse(userMessage, topic); }
+  else if (isWhy(msg)) { response = whyResponse(userMessage, topic); }
+  else if (isTranslation(msg)) { response = translationResponse(userMessage); }
+  else if (isVision(msg)) { response = visionResponse(); }
+  else if (isImageGen(msg)) { response = imageGenResponse(userMessage, topic); }
+  else if (isHealth(msg)) { response = healthResponse(userMessage, topic); }
+  else if (isScience(msg)) { response = scienceResponse(userMessage, topic); }
+  else if (isHistory(msg)) { response = historyResponse(userMessage, topic); }
+  else if (isTech(msg)) { response = techResponse(userMessage, topic); }
+  else if (isMath(msg)) { response = mathResponse(userMessage, topic); }
+  else { response = generalResponse(userMessage, msg, topic, isFollowUp, engine); }
 
-  return generalResponse(userMessage, msg, topic, isFollowUp);
+  return response;
 }
 
 function isGreeting(m: string): boolean {
@@ -247,175 +263,153 @@ function jokeResponse(): string {
   return jokes[Math.floor(Math.random() * jokes.length)] + FEEDBACK;
 }
 
-function codingResponse(original: string, msg: string, topic: string): string {
+function codingResponse(original: string, msg: string, topic: string, engine?: Engine): string {
   const lang = detectLanguage(msg);
   const task = extractCodingTask(msg);
   const knowledge = getKnowledge(msg);
+  const badge = `*💻 Coding Engine · ChatGPT-style*\n\n`;
 
-  let response = `I'll help you ${task} ${lang ? `in **${lang}**` : ""}. Let me work through this step by step.`;
+  let intro = `${badge}I'll help you ${task} ${lang ? `in **${lang}**` : ""}. Let me work through this step by step.`;
 
-  if (knowledge) response = `Great question! ${knowledge}\n\nLet me provide a practical example.`;
+  if (knowledge) intro = `${badge}Great question! ${knowledge}\n\nLet me provide a practical example.`;
 
   if (task.includes("debug") || task.includes("fix") || msg.includes("error") || msg.includes("bug") || msg.includes("not working")) {
-    return `${response}
+    return `${intro}
 
 [Show More →]
 
-## Debugging Approach
+## Debugging: Systematic Approach
 
-Let me reason through this systematically.
+### Step 1: Symptom Identification
+What type of issue are you facing?
+| Type | Signs |
+|------|-------|
+| **Compile error** | Code won't build/run |
+| **Runtime error** | Crashes during execution |
+| **Logic error** | Wrong output, no crash |
+| **Performance** | Too slow or memory-heavy |
 
-### Step 1: Identify the Symptom
-What exactly is going wrong? Is it a:
-- **Compile/parse error** — code won't run at all
-- **Runtime error** — crashes during execution
-- **Logic error** — runs but produces wrong output
-- **Performance issue** — too slow or resource-heavy
+### Step 2: Root Cause Analysis
+Common categories to inspect:
 
-### Step 2: Isolate the Cause
-Common categories to check:
-
-**Syntax & Imports**
 \`\`\`
-// Check for: missing brackets, typos, incorrect imports, undefined variables
-\`\`\`
-
-**Data Flow**
-\`\`\`
-// Verify: types match, async calls are awaited, null checks in place
-console.log("State:", variable);  // Quick sanity check
+// Check imports, syntax, types
+// Verify async/await, null checks
+// Review edge cases
 \`\`\`
 
-**Logic & Edge Cases**
-- Off-by-one errors in loops
-- Empty/null inputs not handled
-- Race conditions in async code
-
-### Step 3: Systematic Fix
-
+### Step 3: Fix & Verify
 \`\`\`${lang?.toLowerCase() || "javascript"}
-// 1. Add input validation
-if (!input) throw new Error("Input required");
-
-// 2. Add logging at key points
-console.debug("Step 1 complete:", partial);
-
-// 3. Handle edge cases explicitly
-const safe = data ?? defaultValue;
+// 1. Validate inputs
+// 2. Add logging
+// 3. Handle edge cases
+// 4. Test with sample data
 \`\`\`
 
-### Step 4: Verify
-Test with normal cases, edge cases, and error conditions.
+### Step 4: Prevent Recurrence
+- Add unit tests covering the fix
+- Document the issue and solution
+- Consider adding validation or type checking
 
-If you share the specific code, I can give a more targeted diagnosis.${FEEDBACK}`;
+If you share your specific code, I can give a targeted fix.${FEEDBACK}`;
   }
 
-  return `${response}
+  return `${intro}
 
 [Show More →]
 
 ## Solution
 
-Let me break this down step by step.
-
 ### Approach
-${task === "explain" ? `I'll explain how this works, covering the core concepts, typical implementation patterns, and best practices.` : `I'll provide a well-structured implementation with proper error handling and documentation.`}
+${task === "explain" ? "Let me walk through how this works, from fundamentals to practical use." : "Here's a clean, well-structured implementation."}
 
 ### Implementation
-
 \`\`\`${lang?.toLowerCase() || "javascript"}
-/**
- * ${task === "explain" ? "Example showing how this concept works" : "Solution for: " + original.substring(0, 60)}
- */
-
 function ${topic.split(/[,\s]+/)[0] || "solution"}(input) {
-  // Validate input first
-  if (!input) {
-    throw new Error("Input is required");
-  }
-
-  // Process the input
-  const result = {
-    input,
-    processed: true,
-    timestamp: new Date().toISOString(),
-    output: processInput(input)
-  };
-
-  return result;
+  if (!input) throw new Error("Input required");
+  return { input, processed: true, output: transform(input) };
 }
 
-function processInput(data) {
-  // Main logic here
-  return Array.isArray(data)
-    ? data.map(item => transform(item))
-    : transform(data);
+function transform(data) {
+  return Array.isArray(data) ? data.map(process) : process(data);
 }
 
-function transform(item) {
-  return {
-    original: item,
-    result: typeof item === "string" ? item.trim() : item,
-    status: "ok"
-  };
+function process(item) {
+  return { original: item, result: typeof item === "string" ? item.trim() : item };
 }
 \`\`\`
 
-### Complexity Analysis
-- **Time**: O(n) for the main operation
-- **Space**: O(n) for the result storage
+### Complexity
+- **Time**: O(n) — linear in input size
+- **Space**: O(n) — result storage
 
-### Edge Cases Handled
-- Empty/null inputs → validation error
-- Array vs single value → handled by \`processInput\`
-- Type variations → handled by \`transform\`
+### Edge Cases
+| Case | Handling |
+|------|----------|
+| Empty/null | Validation error |
+| Array vs scalar | Auto-detected |
+| Type variations | Generic transform |
 
 ### Next Steps
-1. Add unit tests for each function
-2. Add more specific error handling for your use case
-3. Consider performance optimization if working with large datasets
+1. Add unit tests
+2. Customize error handling for your use case
+3. Optimize if working with large datasets
 
 Want me to adapt this for your specific requirements?${FEEDBACK}`;
 }
 
-function researchResponse(original: string, topic: string): string {
-  return `I've analyzed "${topic || original.substring(0, 80)}". Here are my structured findings.
+function researchResponse(original: string, topic: string, engine?: Engine): string {
+  const engineBadge = `*🧪 Research Engine · Perplexity-style*\n\n`;
+  const citations = [
+    `[1] Knowledge base: ${topic || "general knowledge"}`,
+    `[2] Analysis: Multi-perspective research framework`,
+    `[3] Synthesis: Logical reasoning and evidence evaluation`,
+  ];
+
+  return `${engineBadge}I've conducted research on **"${topic || original.substring(0, 80)}"**. Here are my findings.
 
 [Show More →]
 
-## Research Analysis
+## Research Report
 
 ### Executive Summary
-${capitalize(topic || "this topic")} is a multi-dimensional subject that spans several key areas. This analysis breaks it down into core concepts, practical applications, and critical considerations.
+${capitalize(topic || "this topic")} spans multiple dimensions. This report breaks down core concepts, evidence, applications, and open questions.
+
+### Methodology
+1. **Information retrieval** — Searched knowledge base for relevant data
+2. **Cross-reference analysis** — Compared multiple perspectives
+3. **Evidence evaluation** — Assessed reliability and relevance
+4. **Synthesis** — Integrated findings into structured conclusions
 
 ### Key Findings
 
-#### 1. Core Concepts & Definition
-- **What it is**: The fundamental principles that define this topic
-- **Why it matters**: Its significance and relevance in context
-- **How it fits**: Its relationship to broader domains and systems
+#### 1. Core Concepts
+- **Definition**: The fundamental principles that define this topic
+- **Scope**: Its boundaries and relationship to adjacent fields
+- **Significance**: Why it matters in context
 
-#### 2. Practical Applications
-- **Current use cases**: How this is applied in real-world scenarios
-- **Best practices**: Established approaches and methodologies
-- **Industry impact**: The effect on relevant sectors and communities
+#### 2. Evidence & Analysis
+- **Established knowledge**: What is well-understood and verified
+- **Current understanding**: How knowledge has evolved
+- **Gaps**: Areas where information is incomplete or debated
 
-#### 3. Critical Analysis
-- **Strengths**: Where this approach excels and delivers value
-- **Limitations**: Known constraints, gaps, or challenges
-- **Open questions**: Areas where understanding is still evolving
+#### 3. Practical Applications
+- **Use cases**: Real-world implementations and examples
+- **Best practices**: Proven approaches and methodologies
+- **Impact**: Measurable effects on relevant domains
 
-### Evidence & Reasoning
-- The established knowledge base provides a solid foundation
-- Practical examples demonstrate real-world validity
-- Logical analysis supports the main conclusions
+### Sources
+${citations.map(c => `- ${c}`).join("\n")}
 
-### Recommendations
-1. Start with foundational resources to build core understanding
-2. Explore specific sub-topics aligned with your interests
-3. Apply concepts in practical contexts for deeper learning
+### Conclusions
+The evidence points to a multi-faceted understanding requiring integration of different perspectives. Further exploration of specific sub-topics would add depth.
 
-Is there a specific aspect of "${topic || "this topic"}" you'd like me to explore further?${FEEDBACK}`;
+### Recommended Next Steps
+1. Explore specific sub-topics in more detail
+2. Apply findings to your specific context
+3. Engage with primary sources for deeper understanding
+
+Is there a specific aspect of "${topic || "this topic"}" you'd like me to research further?${FEEDBACK}`;
 }
 
 function strategyResponse(original: string, topic: string): string {
@@ -967,27 +961,98 @@ Rwanda has become a regional tech hub with strong commitments to environmental p
 Is there a specific aspect of Rwanda you'd like to learn more about?${FEEDBACK}`;
 }
 
-function generalResponse(original: string, msg: string, topic: string, isFollowUp: boolean): string {
+function generalResponse(original: string, msg: string, topic: string, isFollowUp: boolean, engine?: Engine): string {
   const knowledge = getKnowledge(msg);
+  const badges: Record<Engine, string> = {
+    perplexity: `*🔍 Perplexity Engine — research-first approach*\n\n`,
+    claude: `*🧠 Claude Engine — extended reasoning mode*\n\n`,
+    chatgpt: `*💬 ChatGPT Engine — balanced & versatile*\n\n`,
+    gemini: `*⚡ Gemini Engine — quick & direct*\n\n`,
+  };
+  const badge = badges[engine || "chatgpt"];
+
   if (knowledge) {
-    const expansions = [
-      `Happy to share what I know about this — it's a fascinating topic with a lot of depth.`,
-      `That's a great topic. Let me give you the key points.`,
-      `Good question. Here's some useful information on that.`,
-    ];
-    const exp = expansions[Math.floor(Math.random() * expansions.length)];
-    return `${exp} ${knowledge}
+    return `${badge}${knowledge}
 
 [Show More →]
 
 ${knowledge}
 
-This is one of those topics that touches a lot of different areas. If you want to go deeper into any specific angle — history, how it works, practical applications, or current developments — just let me know and I'll dive in.${FEEDBACK}`;
+**Go deeper**: This topic connects to several related areas. If you want to explore history, practical applications, or current developments, just ask.${FEEDBACK}`;
   }
 
   const topics = topic.split(", ").filter(Boolean);
   const mainTopic = topics[0] || msg.split(/\s+/).slice(0, 3).join(" ") || "what you've mentioned";
   const secondTopic = topics[1] || null;
+
+  if (engine === "perplexity") {
+    return `${badge}Let me research **${mainTopic}** for you.
+
+[Show More →]
+
+## Research Findings: ${capitalize(mainTopic)}
+
+### Overview
+${mainTopic} is a topic with several key dimensions worth examining. Let me break it down from multiple angles.
+
+### Analysis
+- **Core facts**: What is established and widely accepted about ${mainTopic}
+- **Context**: How it fits into broader frameworks and systems
+- **Perspectives**: Different viewpoints and approaches
+
+### Conclusion
+${mainTopic} is best understood by considering both foundational knowledge and practical applications. Would you like me to dive deeper into any specific aspect?${FEEDBACK}`;
+  }
+
+  if (engine === "claude") {
+    return `${badge}Let me reason through **${mainTopic}** carefully.
+
+[Show More →]
+
+## Extended Analysis
+
+Let me work through this step by step.
+
+### 1. Understanding the Question
+When we ask about ${mainTopic}, we're really exploring something with multiple layers. Let me unpack what matters most.
+
+### 2. Breaking It Down
+**First principles:** What are the fundamentals here?
+- The core concepts that define ${mainTopic}
+- How they relate to each other
+- What assumptions we should examine
+
+**Context & nuance:**
+${secondTopic ? `The connection to ${secondTopic} adds an important dimension. ` : ""}Every situation is different — what applies in one context may not in another.
+
+**Connections:**
+${mainTopic} connects to broader ideas. Understanding those connections often reveals insights you wouldn't get from looking at it alone.
+
+### 3. Synthesis
+The most useful approach: stay curious, question assumptions, and adapt as you learn more.
+
+I'd be happy to explore any angle in more detail.${FEEDBACK}`;
+  }
+
+  if (engine === "gemini") {
+    return `${badge}Here's a quick overview of **${mainTopic}**.
+
+[Show More →]
+
+## Quick Overview
+
+### Key Points
+1. **What it is**: A subject spanning several important concepts
+2. **Why it matters**: Relevant to understanding broader systems
+3. **Key takeaway**: Focus on fundamentals first
+
+### Fast Facts
+- Core principles provide the foundation
+- Practical applications bring theory to life
+- Common challenges have well-established solutions
+
+Want me to expand on any specific area?${FEEDBACK}`;
+  }
 
   const isQuestion = /\b(what|how|why|when|where|which|who|do|does|did|can|could|would|should|is|are|was|were|have|has|had)\b/.test(msg) || /\?$/.test(original.trim());
   const isOpinion = /\b(think|feel|believe|opinion|thoughts|what.*about|how.*about)\b/.test(msg);
@@ -996,137 +1061,97 @@ This is one of those topics that touches a lot of different areas. If you want t
   const isStatement = /^(i |i'm |i am |i've |i have |just |sometimes |people |the |it's |its )/.test(msg) || original.split(" ").length > 15;
 
   if (isOpinion) {
-    return `That's an interesting question — let me share my perspective on **${mainTopic}**.
+    return `${badge}Let me share my perspective on **${mainTopic}**.
 
 [Show More →]
 
-I think **${mainTopic}** is one of those things where there's a lot to consider. Here's how I see it:
+I think **${mainTopic}** is worth considering from a few angles. The most important thing is understanding the context — what works in one situation may not in another.
 
-From where I sit, the most important thing about ${mainTopic} is understanding the context — what works well in one situation might not be the best approach in another. The real value comes from thinking critically about your specific needs and what makes sense for your circumstances.
+**Key considerations:**
+- The landscape is always evolving
+- There's rarely one "right" answer
+- The best insights come from combining perspectives
 
-**A few things I'd keep in mind:**
-- The landscape around ${mainTopic} is always evolving, so staying curious is half the battle
-- There's rarely a single "right" answer — the best path depends on your goals, resources, and constraints
-- Often the most valuable insights come from combining different perspectives rather than committing to one approach
+**My take:**
+${mainTopic} is worth investing time in if it aligns with your goals. Stay flexible and adjust as you go.
 
-**My honest take:**
-${mainTopic} is worth investing time in if it aligns with what you're trying to achieve. The key is to stay flexible, keep learning, and adjust your approach as you go.
-
-What's your own perspective on this? I'd be curious to hear what you think.${FEEDBACK}`;
+What's your own perspective? I'd be curious to hear your thoughts.${FEEDBACK}`;
   }
 
   if (isAdvice) {
-    return `Happy to help with some thoughts and suggestions on **${mainTopic}**.
+    return `${badge}Here's some guidance on **${mainTopic}**.
 
 [Show More →]
 
-Here's my advice approach when it comes to **${mainTopic}**:
+**Start with clarity.** Define what success looks like.
 
-**Start with clarity.** Before diving in, get really clear on what you're trying to achieve. The single biggest mistake people make with ${mainTopic} is jumping into action without a clear goal in mind. Take a few minutes to define what success looks like for you.
+**Do your research.** Understand what's worked for others.
 
-**Do your research.** Spend some time understanding the landscape — what's worked for others, what common pitfalls exist, what resources are available. Knowledge upfront saves a lot of trial and error later.
+**Start small.** Pick one aspect, take action, learn, adjust.
 
-**Start small and iterate.** You don't need to figure everything out at once. Pick one manageable aspect of ${mainTopic}, take action on it, learn from the experience, and adjust. Progress beats perfection every time.
+**Bottom line:** Take it step by step, learn as you go.
 
-**A practical suggestion:**
-Set aside some dedicated time to explore ${mainTopic} without pressure. Curiosity and experimentation often lead to the best insights.
-
-**Bottom line:**
-${secondTopic ? `Since you also mentioned ${secondTopic}, I'd suggest thinking about how these connect. ` : ""}The best advice I can give is to trust the process — take it step by step, learn as you go, and don't be afraid to adjust course when you discover something new.
-
-Want me to go deeper on any specific aspect of ${mainTopic}?${FEEDBACK}`;
+Want me to go deeper on any aspect of ${mainTopic}?${FEEDBACK}`;
   }
 
   if (isDeep) {
-    return `That's a thoughtful question. Let me explore the deeper meaning of **${mainTopic}** with you.
+    return `${badge}Let me explore **${mainTopic}** in depth.
 
 [Show More →]
 
-**${mainTopic}** — when you really sit with it, there's more than meets the eye. Let me unpack that.
+**${mainTopic}** — when you really examine it, there's more than meets the eye.
 
-**At its core:**
-${mainTopic} is really about understanding how things connect and why they matter. The surface-level answer is one thing, but the deeper truth is usually more nuanced and more interesting.
+At its core, ${mainTopic} is about understanding how things connect and why they matter. The surface answer is one thing, but the deeper truth is usually more nuanced.
 
-**What I find fascinating:**
-The more you explore ${mainTopic}, the more you realize it's connected to so many other things. It's rarely an isolated concept — it touches on other ideas, depends on certain conditions, and has ripple effects you might not expect at first glance.
+**What I find interesting:**
+The more you explore ${mainTopic}, the more you realize how it connects to other ideas.
 
 **A perspective worth considering:**
-Sometimes the most important questions about ${mainTopic} aren't about how it works, but about why it matters. What's the human element? What does it mean for the people involved? Those are often the questions that lead to the richest understanding.
+Sometimes the most important questions aren't about how, but about why. What's the human element?
 
-**I'd encourage you to:**
-- Question your assumptions about ${mainTopic}
-- Look at it from different angles — technical, human, philosophical
-- Think about what ${secondTopic || "related aspects"} bring to the picture
-
-This is exactly the kind of question that rewards deep thinking. What specific dimension of ${mainTopic} are you most curious about?${FEEDBACK}`;
+What specific dimension of ${mainTopic} are you most curious about?${FEEDBACK}`;
   }
 
   if (isQuestion) {
-    const nounWords = msg.split(/\s+/).filter(w => w.length > 2 && !["the", "and", "for", "are", "not", "but", "can", "all", "was", "got", "has", "had", "its", "how", "why", "you", "get", "out", "use", "two", "way", "say", "who", "any", "new", "now", "own", "may", "see", "what", "does", "tell", "about", "know", "want", "need", "help", "just", "also", "much", "more", "some", "than"].includes(w));
-    const keyThing = nounWords.length > 0 ? nounWords.slice(0, 3).join(" ") : mainTopic;
-    return `That's a good question. Let me share what I know about **${keyThing}**.
+    return `${badge}Good question about **${mainTopic}**.
 
 [Show More →]
 
-So about **${keyThing}** — here's my take.
+**${capitalize(mainTopic)}** — let me break that down.
 
-**The short version:**
-${keyThing} is an interesting area with a few key aspects worth understanding. It's not overly complicated once you break it down, but there are some important nuances.
+First, it helps to understand the core ideas. ${mainTopic} involves a few key concepts that work together.
 
-**Let me break it down:**
+Second, the practical side matters. How does ${mainTopic} play out in real situations?
 
-First, it helps to know what we're really talking about. ${keyThing} involves a few core ideas that work together — once you see the pattern, it starts to make a lot more sense.
-
-Second, the practical side matters. How does ${keyThing} actually play out in real situations? That's where theory meets reality, and often where the most useful insights come from.
-
-Third, there are some common questions people have about ${keyThing} — things that seem confusing at first but become clear with a bit of explanation.
-
-**One thing worth noting:**
-${secondTopic ? `Since you're also asking about ${secondTopic}, there's an interesting connection here. ` : ""}Everyone comes to ${keyThing} with different background knowledge, so what's obvious to one person might be confusing to another. There's no shame in asking — that's how we learn.
-
-If you give me a bit more context about what specifically you're trying to understand about ${keyThing}, I can give you a much more targeted answer.${FEEDBACK}`;
+${secondTopic ? `Since you're asking about ${secondTopic} too, there's an interesting connection. ` : ""}If you give me more context, I can give a more targeted answer.${FEEDBACK}`;
   }
 
   if (isStatement) {
-    return `Thanks for sharing that. I hear you on **${mainTopic}** — let me respond to that.
+    return `${badge}Thanks for sharing your thoughts on **${mainTopic}**.
 
 [Show More →]
 
-I appreciate you bringing that up. It sounds like **${mainTopic}** is something you've been thinking about, and I think that's worth exploring.
+It sounds like ${mainTopic} is something you've been thinking about. What you're describing is relatable.
 
-**Here's my reaction:**
-What you're describing about ${mainTopic} is actually quite relatable. A lot of people find themselves in similar situations — trying to make sense of something, figure out the next step, or just understand it better.
+**A thought:**
+Sometimes we focus on the obvious and overlook the subtler aspects. The interesting stuff is often just beneath the surface.
 
-**A thought that comes to mind:**
-Sometimes when we talk about ${mainTopic}, we focus on the obvious aspects and overlook the subtler ones. The interesting stuff is often hiding just beneath the surface. ${secondTopic ? `The fact that you also mention ${secondTopic} suggests you're already thinking beyond the obvious, which is great.` : ""}
-
-**A couple of things to consider:**
-- How does ${mainTopic} fit into the bigger picture of what you're working on?
-- What would a good outcome look like for you?
-- Is there someone whose perspective on ${mainTopic} you'd find valuable?
-
-I'm here to help think this through with you. What aspect of ${mainTopic} would be most useful to explore together?${FEEDBACK}`;
+How does ${mainTopic} fit into the bigger picture of what you're working on? I'm here to help think it through.${FEEDBACK}`;
   }
 
-  const nouns = msg.split(/\s+/).filter(w => w.length > 2 && !["the", "and", "for", "are", "not", "but", "can", "all", "was", "got", "has", "had", "its", "how", "why", "you", "get", "out", "use", "two", "way", "say", "who", "any", "new", "now", "own", "may", "see", "think", "feel", "find", "take", "give", "thing", "things", "much", "more", "many", "here"].includes(w));
-  const specific = nouns.length > 2 ? nouns.slice(0, 3).join(", ") : mainTopic;
-
-  return `Interesting — let me think about that for a moment.
+  return `${badge}Interesting — let me think about **${mainTopic}**.
 
 [Show More →]
 
-So you're asking about **${specific}**. Here's what comes to mind.
+So you're asking about ${mainTopic}. Here's what comes to mind.
 
-${mainTopic} is one of those topics where the more you explore it, the more you find. There's always another layer, another angle, another connection to something else.
+It's one of those topics where the more you explore, the more you find. There's always another layer.
 
-**What stands out to me:**
-The most interesting thing about ${specific} isn't always the most obvious thing. Often it's the connections — how ${specific} relates to other ideas, how it fits into a bigger picture, or how small changes in approach can lead to very different outcomes.
-
-**A way to think about it:**
-${specific} is less about finding the "right answer" and more about asking good questions. The quality of your thinking about ${specific} will improve as you ask better questions and consider different viewpoints.
+**What stands out:**
+The most interesting thing isn't always the most obvious. Often it's the connections to other ideas.
 
 **Where to go from here:**
-If you want, we can explore ${specific} together. Tell me what aspect you're most curious about — practical application, theory, examples, history, or something else entirely — and I'll focus my response there.${FEEDBACK}`;
+Tell me what aspect interests you most — practical application, theory, examples, or something else.${FEEDBACK}`;
 }
 
 function detectLanguage(msg: string): string | null {
